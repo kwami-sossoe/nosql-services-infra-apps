@@ -1,0 +1,26 @@
+{{- if .Values.apps.gatekeeper.enabled -}}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: opa
+  namespace: argocd
+spec:
+  clusterResourceWhitelist:
+  - group: rbac.authorization.k8s.io
+    kind: clusterroles
+  - group: rbac.authorization.k8s.io
+    kind: clusterrolebindings
+  - group: '*'
+    kind: '*'
+  description: Open Policy Agent
+  destinations:
+  - namespace: gatekeeper-system
+    server: https://kubernetes.default.svc
+  namespaceResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  sourceRepos:
+  - https://artifactory.dt.renault.com/artifactory/cloud-transformation
+  - europe-docker.pkg.dev/irn-71889-adm-dev-ope-68/helm-gke-irn70740
+{{- end }}

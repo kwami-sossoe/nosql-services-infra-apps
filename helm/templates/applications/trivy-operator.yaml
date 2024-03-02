@@ -1,0 +1,95 @@
+{{- if .Values.apps.trivyOperator.enabled -}}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  name: trivy-operator
+spec:
+  project: {{ include "trivyOperator.appproject" . }}
+  source:
+    repoURL: {{ .Values.cluster.ociRepoUrl | quote }}
+    targetRevision: {{ .Values.apps.trivyOperator.targetRevision | quote }}
+    chart: trivy-operator
+    helm:
+      values: |
+        trivy-operator:
+          {{-  if .Values.apps.trivyOperator.excludeNamespaces }}
+          excludeNamespaces: {{ .Values.apps.trivyOperator.excludeNamespaces }}
+          {{ end }}
+          image:
+            repository: {{ .Values.apps.trivyOperator.trivyOperatorImageRepo }}
+          {{-  if .Values.cluster.imagePullSecrets }}
+            pullSecrets:
+              - name: {{ toYaml (index .Values.cluster.imagePullSecrets 0).name }}
+          {{- end }}
+          serviceMonitor:
+            enabled: {{ .Values.apps.prometheus.enabled }}
+            labels:
+              prometheus: {{ include "prometheus.label" . | quote }}
+          trivy:
+            severity: {{ .Values.apps.trivyOperator.trivySeverity }}
+            repository: {{ .Values.apps.trivyOperator.trivyImageRepo }}
+            resources:
+              {{- .Values.apps.trivyOperator.resources | toYaml | nindent 14 }}
+            httpProxy: "{{ .Values.cluster.httpProxy }}"
+            httpsProxy: "{{ .Values.cluster.httpProxy }}"
+            noProxy: "{{ .Values.cluster.noProxy }}"
+        prometheus:
+          enabled: {{ .Values.apps.prometheus.enabled }}
+          rules:
+            enabled:  {{ .Values.apps.prometheus.enabled }}
+            labels:
+              prometheus: {{ include "prometheus.label" . | quote }}
+        grafanaDashboard:
+          enabled: {{ .Values.apps.grafana.enabled }}
+
+  ignoreDifferences:
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      name: ciskubebenchreports.aquasecurity.github.io
+      jsonPointers:
+        - /spec/names/categories
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      name: clusterconfigauditreports.aquasecurity.github.io
+      jsonPointers:
+        - /spec/names/categories
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      name: clustervulnerabilityreports.aquasecurity.github.io
+      jsonPointers:
+        - /spec/names/categories
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      name: kubehunterreports.aquasecurity.github.io
+      jsonPointers:
+        - /spec/names/categories
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      name: clustercompliancedetailreports.aquasecurity.github.io
+      jsonPointers:
+        - /spec/names/categories
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      name: clustercompliancereports.aquasecurity.github.io
+      jsonPointers:
+        - /spec/names/categories
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      name: configauditreports.aquasecurity.github.io
+      jsonPointers:
+        - /spec/names/categories
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      name: vulnerabilityreports.aquasecurity.github.io
+      jsonPointers:
+        - /spec/names/categories
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: {{ include "trivyOperator.namespace" . | quote }}
+  
+  {{- include "infra.syncPolicy" (list . "trivyOperator" ) | nindent 2 }}
+
+{{- end }}

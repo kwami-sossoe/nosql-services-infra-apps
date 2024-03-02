@@ -1,0 +1,26 @@
+{{- if .Values.extraApps.infraResourceExporter.enabled }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: infra-resource-exporter
+  namespace: argocd
+spec:
+  clusterResourceWhitelist:
+  - group: ""
+    kind: Namespace
+  - group: rbac.authorization.k8s.io
+    kind: ClusterRoleBinding
+  - group: apiextensions.k8s.io
+    kind: CustomResourceDefinition
+  - group: rbac.authorization.k8s.io
+    kind: ClusterRole
+  destinations:
+  - namespace: infra-resource-exporter
+    server: https://kubernetes.default.svc
+  namespaceResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  sourceRepos:
+  - europe-docker.pkg.dev/irn-71889-adm-dev-ope-68/helm-gke-irn70740
+{{- end }}

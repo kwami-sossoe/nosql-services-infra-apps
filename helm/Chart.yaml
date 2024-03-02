@@ -1,0 +1,11 @@
+apiVersion: v2
+appVersion: "0.1.0"
+description: |-
+  Helm Chart to deploy NOSQL SelfServices Infrastructure.
+name: nosql-services-infra-apps
+version: 0.1.0
+maintainers:
+  - name: Kwami Seyram SOSSOE
+    email: kwami-seyram-externe.sossoe@edf.fr
+  - name: Anis BEN ----
+    email: anis---@edf.fr

@@ -1,0 +1,124 @@
+{{- if .Values.apps.goldilocks.enabled -}}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+  name: goldilocks
+spec:
+  project: {{ include "goldilocks.appproject" . }}
+  source:
+    repoURL: {{ .Values.cluster.ociRepoUrl | quote }}
+    targetRevision: {{ .Values.apps.goldilocks.targetRevision | quote }}
+    chart: goldilocks
+    helm:
+      values: |
+        goldilocks:
+          image:
+            repository: {{ .Values.apps.goldilocks.goldilocksImageRepo | quote }}
+          {{-  if .Values.cluster.imagePullSecrets }}
+          imagePullSecrets:
+          {{- toYaml .Values.cluster.imagePullSecrets | nindent 10 }}
+          {{- end }}
+          controller:
+            resources:
+              {{- .Values.apps.goldilocks.controller.resources | toYaml | nindent 14 }}
+          dashboard:
+            resources:
+              {{- .Values.apps.goldilocks.dashboard.resources | toYaml | nindent 14 }}
+            ingress:
+              ingressClassName: {{ include "goldilocks.ingressClass" . }}
+              hosts:
+                - host: {{ include "goldilocks.url" . }}
+                  paths:
+                    - path: /
+                      type: Prefix
+              tls:
+              - secretName: {{ include "infra-stack.tlsSecret" . }}
+                hosts:
+                  - {{ include "goldilocks.url" . }}
+        oauth2-proxy:
+          image:
+            repository: {{ .Values.apps.goldilocks.oauth2Proxy.oauth2ProxyImageRepo | quote }}
+          {{-  if .Values.cluster.imagePullSecrets }}
+          imagePullSecrets:
+          {{- toYaml .Values.cluster.imagePullSecrets | nindent 10 }}
+          {{- end }}
+          metrics:
+            serviceMonitor: 
+              enabled: {{ .Values.apps.prometheus.enabled }}
+              labels:
+                prometheus: {{ include "prometheus.label" . | quote }}
+          resources:
+            {{- .Values.apps.goldilocks.oauth2Proxy.resources | toYaml | nindent 14 }}
+          {{-  if .Values.apps.goldilocks.oauth2Proxy.extraVolumes }}
+          extraVolumes:
+          {{- toYaml .Values.apps.goldilocks.oauth2Proxy.extraVolumes | nindent 10 }}
+          {{- end }}
+          {{-  if .Values.apps.goldilocks.oauth2Proxy.extraVolumeMounts }}
+          extraVolumeMounts:
+          {{- toYaml .Values.apps.goldilocks.oauth2Proxy.extraVolumeMounts | nindent 10 }}
+          {{- end }}
+          config:
+            configFile: |-
+              provider = "oidc"
+              provider_display_name = "Renault Idp"
+              email_domains = [ "renault.com" ]
+              redirect_url = "https://{{ include "goldilocks.url" . }}/oauth2/callback"
+              oidc_issuer_url = "https://{{ include "dex.url" . }}/dex"
+              cookie_secure = "false"
+              upstreams = [ "file:///dev/null" ]
+              skip_auth_preflight = false
+              set_xauthrequest = true
+              set_authorization_header = true
+              pass_authorization_header = true
+              pass_host_header = true
+              pass_user_headers = true
+              pass_access_token = true
+              oidc_groups_claim = "groups"
+              scope = "openid profile email groups"
+              allowed_groups = [{{ include "goldilocks.oidcGroupRo" . }}]
+              cookie_refresh = "1m"
+              cookie_expire = "30m"
+          ingress:
+            className: {{ include "goldilocks.ingressClass" . }}
+            hosts:
+              - {{ include "goldilocks.url" . }}
+            tls:
+            - secretName:  {{ include "infra-stack.tlsSecret" . }}
+              hosts:
+                - {{ include "goldilocks.url" . }}
+          extraEnv:
+            - name: "http_proxy"
+              value: "{{ .Values.cluster.httpProxy }}"
+            - name: "https_proxy"
+              value: "{{ .Values.cluster.httpProxy }}"
+            - name: "no_proxy"
+              value: "{{ .Values.cluster.noProxy }}"
+        prometheus:
+          enabled: {{ .Values.apps.prometheus.enabled }}
+          rules:
+            enabled: {{ .Values.apps.prometheus.enabled }}
+            labels:
+              prometheus: {{ include "prometheus.label" . | quote }}
+          grafanaDashboard:
+            enabled: {{ .Values.apps.prometheus.enabled }}
+        vault:
+          enabled: {{ .Values.apps.goldilocks.vault.enabled }}
+        {{- if .Values.apps.goldilocks.vault.enabled }}
+          serviceAccount:
+            create: {{ .Values.apps.goldilocks.vault.serviceAccount.create }}
+          vaultRoleName: {{ .Values.cluster.vaultRoleName }}
+          mountPath: {{ .Values.cluster.mountPath | quote}}
+          vaultKeyPath: {{ .Values.apps.goldilocks.vault.vaultKeyPath }}
+        {{- end }}
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: {{ include "goldilocks.namespace" . | quote }}
+  
+  {{- include "infra.syncPolicy" (list . "goldilocks" ) | nindent 2 }}
+
+
+{{- end }}

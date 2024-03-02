@@ -1,0 +1,52 @@
+{{- if .Values.apps.vaultAgent.enabled -}}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  name: vault-agent-injector
+spec:
+  project: {{ include "vault-agent-injector.appproject" . }}
+  source:
+    repoURL: {{ .Values.cluster.ociRepoUrl | quote }}
+    targetRevision: {{ .Values.apps.vaultAgent.targetRevision | quote }}
+    chart: vault-injector
+    helm:
+      values: |
+        vault:
+          global:
+            externalVaultAddr: {{ .Values.apps.vaultAgent.externalVaultAddr }}
+          {{- if .Values.cluster.imagePullSecrets }}
+            imagePullSecrets:
+            {{- toYaml .Values.cluster.imagePullSecrets | nindent 12 }}
+          {{- end }}
+          injector:
+            enabled: true
+            port: 10250
+            metrics:
+              enabled: {{ .Values.apps.prometheus.enabled }}
+            prometheusRules:
+              enabled: {{ .Values.apps.prometheus.enabled }}
+              labels:
+                prometheus: {{ include "prometheus.label" . | quote }}
+            image:
+              repository: {{ .Values.apps.vaultAgent.vaultk8sImageRepo }}
+              tag: {{ .Values.apps.vaultAgent.vaultk8sImageTag | quote }}
+            agentImage:
+              repository: {{ .Values.apps.vaultAgent.agentImageRepo }}
+              tag: {{ .Values.apps.vaultAgent.agentImageTag | quote }}
+            authPath: {{ .Values.apps.vaultAgent.authPath }}
+            resources:
+              {{- .Values.apps.vaultAgent.resources | toYaml | nindent 14 }}
+          grafanaDashboard:
+            enabled: {{ .Values.apps.grafana.enabled }}
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: {{ include "vaultAgent.namespace" . | quote }}
+  
+  {{- include "infra.syncPolicy" (list . "vaultAgent" ) | nindent 2 }}
+
+{{- end }}
+

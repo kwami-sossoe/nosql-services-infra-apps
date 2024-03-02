@@ -1,0 +1,29 @@
+{{- if .Values.apps.starboardOperator.enabled -}}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: starboard-operator
+  namespace: argocd
+spec:
+  clusterResourceWhitelist:
+  - group: rbac.authorization.k8s.io
+    kind: ClusterRole
+  - group: rbac.authorization.k8s.io
+    kind: ClusterRoleBinding
+  - group: apiregistration.k8s.io
+    kind: APIService
+  - group: apiextensions.k8s.io
+    kind: CustomResourceDefinition
+  - group: aquasecurity.github.io
+    kind: ClusterComplianceReport
+  description: "Starboard Operator"
+  destinations:
+  - namespace: starboard-operator
+    server: https://kubernetes.default.svc
+  namespaceResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  sourceRepos:
+  - europe-docker.pkg.dev/irn-71889-adm-dev-ope-68/helm-gke-irn70740
+{{- end }}

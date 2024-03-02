@@ -1,0 +1,27 @@
+{{- if .Values.apps.karma.enabled -}}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: karma
+  namespace: argocd
+spec:
+  clusterResourceWhitelist:
+  - group: ""
+    kind: Namespace
+  - group: rbac.authorization.k8s.io
+    kind: ClusterRoleBinding
+  - group: apiextensions.k8s.io
+    kind: CustomResourceDefinition
+  - group: rbac.authorization.k8s.io
+    kind: ClusterRole
+  description: karma deployments
+  destinations:
+  - namespace: karma-system
+    server: https://kubernetes.default.svc
+  namespaceResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  sourceRepos:
+  - europe-docker.pkg.dev/irn-71889-adm-dev-ope-68/helm-gke-irn70740
+{{- end }}

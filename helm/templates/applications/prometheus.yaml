@@ -1,0 +1,129 @@
+{{- if .Values.apps.prometheus.enabled -}}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+  name: prometheus-server
+spec:
+  project: {{ include "prometheus.appproject" . }}
+  source:
+    repoURL: {{ .Values.cluster.ociRepoUrl | quote }}
+    targetRevision: {{ .Values.apps.prometheus.targetRevision | quote }}
+    chart: prometheus
+    helm:
+      values: |
+        rbac:
+          scopeNamespaced: false
+        alerting:
+          endpoints:
+          - name: alertmanager-operated
+            namespace: {{ include "alertmanager.namespace" . }}
+            port: web
+        {{- if .Values.cluster.imagePullSecrets }}
+        imagePullSecrets:
+        {{- toYaml .Values.cluster.imagePullSecrets | nindent 8 }}
+        {{- end }}
+        {{- if .Values.apps.prometheus.volumes }}
+        volumes:
+        {{- toYaml .Values.apps.prometheus.volumes | nindent 8 }}
+        {{- end }}
+        {{- if .Values.apps.prometheus.volumeMounts }}
+        volumeMounts:
+        {{- toYaml .Values.apps.prometheus.volumeMounts | nindent 8 }}
+        {{- end }}
+        ingress:
+          enabled: true
+          host: {{ include "prometheus.url" . }}
+          extraAnnotations:
+            kubernetes.io/ingress.class: {{ include "prometheus.ingressClass" . }}
+          path: "/"
+          acme:
+            enabled: false
+          tls:
+            secretName: {{ include "infra-stack.tlsSecret" . }}
+        prometheus:
+          image:
+            repository: "{{ .Values.apps.prometheus.prometheusImageRepo }}"
+            tag: "{{ .Values.apps.prometheus.prometheusImageTag }}"
+          externalLabels:
+            cluster: {{ include "prometheus.externalLabels" . }}
+          ruleSelector:
+            matchLabels:
+              prometheus: {{ include "prometheus.label" . }}
+          podMonitorSelector:
+            matchLabels:
+              prometheus: {{ include "prometheus.label" . }}
+          resources:
+            {{- .Values.apps.prometheus.resources | toYaml | nindent 12 }}
+          storageSpec:
+            volumeClaimTemplate:
+              spec:
+                storageClassName: standard-rwo
+                accessModes:
+                - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: "100Gi"
+          retentionSize: "80GB"
+          {{- if .Values.apps.prometheus.volumes }}
+          volumes:
+            {{- toYaml .Values.apps.prometheus.volumes | nindent 12 }}
+          {{- end }}
+          {{- if .Values.apps.prometheus.volumeMounts }}
+          volumeMounts:
+            {{- toYaml .Values.apps.prometheus.volumeMounts | nindent 12 }}
+          {{- end }}
+          {{- if .Values.apps.prometheus.priorityClassName }}
+          priorityClassName: "{{ .Values.apps.prometheus.priorityClassName }}"
+          {{- end }}
+        rules:
+          enabled: false
+        serviceMonitor:
+          enabled: true
+        oidc:
+          env:
+            - name: "http_proxy"
+              value: "{{ .Values.cluster.httpProxy }}"
+            - name: "https_proxy"
+              value: "{{ .Values.cluster.httpProxy }}"
+            - name: "no_proxy"
+              value: "{{ .Values.cluster.noProxy }}, *.cluster.local"
+          image: 
+            repository: {{ .Values.apps.prometheus.oidcImageRepo | quote }}
+            tag: {{ .Values.apps.prometheus.oidcImageTag | quote }}
+          enabled: true
+          dexClient:
+            enabled: false
+          configMap:
+            discoveryUrl: "https://{{ include "dex.url" . }}/dex/.well-known/openid-configuration"
+            matchClaims:
+              iss: "https://{{ include "dex.url" . }}/dex"
+              aud: "prometheus"
+            resources:
+              - uri: /*
+                method:
+                  - HEAD
+                  - DELETE
+                  - POST
+                  - OPTIONS
+                  - PUT
+                groups:
+                  {{ include "prometheus.oidcGroupRw" . }}
+              - uri: /*
+                method:
+                  - GET
+                groups:
+                  {{ include "prometheus.oidcGroupRw" . }}
+                  {{ include "prometheus.oidcGroupRo" . }}
+          secret:
+            create: false
+            name: dex-server-oidc
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: {{ include "prometheus.namespace" . | quote }}
+
+  {{- include "infra.syncPolicy" (list . "prometheus" ) | nindent 2 }}
+
+{{- end }}

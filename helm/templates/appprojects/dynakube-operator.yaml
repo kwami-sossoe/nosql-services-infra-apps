@@ -1,0 +1,40 @@
+{{- if .Values.apps.dynaKubeOperator.enabled -}}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: dynakube-operator
+  namespace: argocd
+spec:
+  clusterResourceWhitelist:
+  - group: ""
+    kind: Namespace
+  - group: policy
+    kind: PodSecurityPolicy
+  - group: rbac.authorization.k8s.io
+    kind: ClusterRoleBinding
+  - group: apiextensions.k8s.io
+    kind: CustomResourceDefinition
+  - group: rbac.authorization.k8s.io
+    kind: ClusterRole
+  - group: admissionregistration.k8s.io
+    kind: MutatingWebhookConfiguration
+  - group: admissionregistration.k8s.io
+    kind: ValidatingWebhookConfiguration
+  - group: storage.k8s.io
+    kind: CSIDriver
+  - group: ""
+    kind: ServiceAccount
+  - group: scheduling.k8s.io
+    kind: PriorityClass
+  description: dynakube-operator
+  destinations:
+  - namespace: dynakube-operator
+    server: https://kubernetes.default.svc
+  namespaceResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  sourceRepos:
+  - https://gitlabee.dt.renault.com/IRN-69805/public/dynatrace-kubernetes-api.git
+  - europe-docker.pkg.dev/irn-71889-adm-dev-ope-68/helm-gke-irn70740
+{{- end }}

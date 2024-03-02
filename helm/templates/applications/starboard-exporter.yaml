@@ -1,0 +1,47 @@
+{{- if .Values.apps.starboardExporter.enabled -}}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  name: starboard-exporter
+spec:
+  project: {{ include "starboardExporter.appproject" . }}
+  source:
+    repoURL: {{ .Values.cluster.ociRepoUrl | quote }}
+    targetRevision: {{ .Values.apps.starboardExporter.targetRevision | quote }}
+    chart: starboard-exporter
+    helm:
+      values: |
+        {{- if .Values.cluster.imagePullSecrets }}
+        imagePullSecrets:
+        {{- toYaml .Values.cluster.imagePullSecrets | nindent 10 }}
+        {{- end }}
+        image:
+          repo: {{ .Values.apps.starboardExporter.starboardExporterImageRepo }}
+          tag: {{ .Values.apps.starboardExporter.starboardExporterImageTag }}
+        kubeRbacProxy:
+          image:
+            repo: {{ .Values.apps.starboardExporter.kubeRbacProxyImageRepo }}
+            tag: {{ .Values.apps.starboardExporter.kubeRbacProxyImageTag }}
+        resources:
+            {{- .Values.apps.starboardExporter.resources | toYaml | nindent 10 }}
+        prometheus:
+          serviceMonitor:
+            enabled: {{ .Values.apps.prometheus.enabled }}
+            labels:
+              prometheus: {{ include "prometheus.label" . | quote }}
+          rules:
+            enabled: {{ .Values.apps.prometheus.enabled }}
+            labels:
+              prometheus: {{ include "prometheus.label" . | quote }}
+        grafanaDashboard:
+          enabled: {{ .Values.apps.grafana.enabled }}
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: {{ include "starboardExporter.namespace" . | quote }}
+  
+  {{- include "infra.syncPolicy" (list . "starboardExporter" ) | nindent 2 }}
+
+{{- end }}

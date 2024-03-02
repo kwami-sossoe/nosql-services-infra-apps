@@ -1,0 +1,19 @@
+{{- if .Values.extraApps.priorityClasses.enabled }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: priority-classes
+  namespace: argocd
+spec:
+  clusterResourceWhitelist:
+    - group: scheduling.k8s.io
+      kind: PriorityClass
+  destinations:
+    - server: 'https://kubernetes.default.svc'
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  sourceRepos:
+    - europe-docker.pkg.dev/irn-71889-adm-dev-ope-68/helm-gke-irn70740
+{{- end }}

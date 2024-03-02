@@ -1,0 +1,21 @@
+{{- if and .Values.apps.prometheus.enabled .Values.apps.prometheus.rules.enabled }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  name: k8s-prometheus-rules
+spec:
+  project: {{ include "prometheus.appproject" . }}
+  source:
+    repoURL: {{ .Values.cluster.ociRepoUrl | quote }}
+    targetRevision: {{ .Values.apps.prometheus.rules.targetRevision | quote }}
+    chart: k8s-prometheus-rules
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: {{ include "prometheus.namespace" . | quote }}
+
+  {{- include "infra.syncPolicy" (list . "prometheus" ) | nindent 2 }}
+
+{{- end }}

@@ -1,0 +1,94 @@
+{{- if .Values.apps.karma.enabled -}}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: karma
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: {{ include "karma.appproject" . }}
+  source:
+    repoURL: {{ .Values.cluster.ociRepoUrl | quote }}
+    targetRevision: {{ .Values.apps.karma.targetRevision | quote }}
+    chart: karma
+    helm:
+      values: |
+      {{- if .Values.cluster.imagePullSecrets }}
+        imagePullSecrets:
+        {{- toYaml .Values.cluster.imagePullSecrets | nindent 8 }}
+      {{- end }}
+      {{- if .Values.apps.karma.priorityClassName }}
+        priorityClassName: {{.Values.apps.karma.priorityClassName }}
+      {{- end }}
+        image:
+          repository: {{ .Values.apps.karma.karmaImageRepo | quote }}
+          tag: {{ .Values.apps.karma.karmaImageTag | quote }}
+        resources:
+          {{- .Values.apps.karma.resources | toYaml | nindent 10 }}
+        ingress:
+          enabled: true
+          annotations:
+            kubernetes.io/ingress.allow-http: "false"
+            kubernetes.io/tls-acme: "false"
+          className: {{ include "karma.ingressClass" . }}
+          host: {{ include "karma.url" . }}
+          tls:
+            secretName: {{ include "infra-stack.tlsSecret" . }}
+        env:
+          - name: "http_proxy"
+            value: "{{ .Values.cluster.httpProxy }}"
+          - name: "https_proxy"
+            value: "{{ .Values.cluster.httpProxy }}"
+          - name: "no_proxy"
+            value: "{{ .Values.cluster.noProxy }}"    
+        oidc:
+          env:
+            - name: "http_proxy"
+              value: "{{ .Values.cluster.httpProxy }}"
+            - name: "https_proxy"
+              value: "{{ .Values.cluster.httpProxy }}"
+            - name: "no_proxy"
+              value: "{{ .Values.cluster.noProxy }}, *.cluster.local"
+          enabled: true
+          image: 
+            repository: {{ .Values.apps.karma.oidcProxyImageRepo | quote }}
+            tag: {{ .Values.apps.karma.oidcProxyImageTag | quote }}
+          dexClient:
+            enabled: false
+          configMap:
+            issuerUrl: "https://{{ include "dex.url" . }}/dex"
+          secret:
+            create: false
+            name: dex-server-oidc
+        prometheus:
+          enabled: {{ .Values.apps.prometheus.enabled }}
+          serviceMonitor:
+            enabled: {{ .Values.apps.karma.prometheus.serviceMonitor.enabled }}
+          rules:
+            enabled: {{ .Values.apps.prometheus.enabled }}
+            labels:
+              prometheus: {{ include "prometheus.label" . | quote }}
+        grafanaDashboard:
+          enabled: {{ .Values.apps.prometheus.enabled }}
+        karma:
+          configuration:
+            config:
+            {{- .Values.apps.karma.alertmanagerUris | toYaml | nindent 14 }}
+
+        {{- if .Values.apps.karma.vault.enabled }}
+        vault:
+        {{- .Values.apps.karma.vault | toYaml | nindent 10 }}
+        {{- else }}
+        certificates:
+          {{- .Values.apps.karma.certificates | toYaml | nindent 10 }}
+        {{- end }}
+
+
+   
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: {{ include "karma.namespace" . | quote }}
+  {{- include "infra.syncPolicy" (list . "karma" ) | nindent 2 }}
+
+{{- end }}

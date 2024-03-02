@@ -1,0 +1,1433 @@
+cluster:
+  # -- URL of the helm repo for Artifact Registry. To be used for migration of helm charts to Artifact Registry
+  ociRepoUrl: "europe-docker.pkg.dev/irn-71889-adm-dev-ope-68/helm-gke-irn70740"
+  # -- Suffix url for ingress access
+  baseURL: ""
+  # -- prefix url for ingress access
+  prefix: ""
+  # -- environment name used to construct url (i.e {alertmanager,grafana,prometheus,dex}.${prefix}.${env}.${baseURL})
+  env: ""
+  # -- http_proxy and https_proxy env variable if any
+  httpProxy: ""
+  # -- no_proxy env variable
+  noProxy: ""
+  # -- k8s secret name containing proxy env variable
+  proxyEnvSecret: ""
+  # -- k8s secret key name containing proxy env variable
+  proxyEnvSecretKey: ""
+  # -- URL of the IDP Provider
+  idpUrl: ""
+  # -- IDP role group
+  idpRole: ""
+  # -- GCP Project ID
+  gcpProjectId: ""
+  # -- GCP GKE Project ID (If ConfigConnector Enabled)
+  gkeProjectId: ""
+  # -- environment of the cluster
+  clusterEnv: ""
+  # -- Name of the target cluster
+  clusterName: ""
+  # -- Secrets to use to pull images for all infra components.
+  imagePullSecrets: []
+  # - name: artifact-registry
+  # -- branch name to use
+  branch: master
+
+
+argocd:
+  # -- Argocd Sync Policy. Can be deactivate per apps
+  syncPolicy:
+    # -- Enable [Argocd Auto Sync](https://argoproj.github.io/argo-cd/user-guide/auto_sync/#automated-sync-policy)
+    auto: true
+    # -- Enable [Argocd self heal](https://argoproj.github.io/argo-cd/user-guide/auto_sync/#automatic-self-healing)
+    selfHeal: true
+    # -- Enable [ArgoCd Autoprune](https://argoproj.github.io/argo-cd/user-guide/auto_sync/#automatic-pruning)
+    prune: true
+    # -- Argocd Retry Policy.
+    retry: {}
+      # # -- Argocd Retry Limit.
+      # limit:
+      # # -- Argocd Retry Backoff.
+      # backoff:
+      #   # -- Argocd Retry Backoff Duration.
+      #   duration:
+      #   # -- Argocd Retry Backoff Max Duration.
+      #   maxDuration:
+      #   # -- Argocd Retry Backoff Factor.
+      #   factor:
+
+apps:
+
+  alertmanager:
+    # -- enable Alertmanager
+    enabled: true
+    # -- modify deafult reciever of alerts for msteam
+    defaultChannel: ""
+    # -- Alertmanager helm chart revision
+    targetRevision: 0.11.1
+    # -- Alertmanager docker image repo
+    alertmanagerImageRepo: ""
+    # -- Alertmanager docker image tag
+    alertmanagerImageTag: ""
+    # -- Ingress class to use for Alertmanager. Should have already installed Nginx Ingress Controller on the k8s cluster
+    ingressClass: ""
+    # -- Secret name that contains msteams webhook url
+    msteamswebhookSecretsName: ""
+    # -- Key in secret name that contains msteams webhook url
+    msteamswebhookSecretsKey: ""
+    # -- MS Teams docker image repo
+    msteamsImageRepo: ""
+    # -- MS Teams docker image tag
+    msteamsImageTag: ""
+    # -- Extras annotations to add to msteams pod as `key: value`
+    msteamsextraAnnotations: {}
+    # -- Multi channel configuration
+    multiChannelConfig: []
+    # -- Override default url (<app>.<prefix>.<env>.<baseURL>).
+    url:
+    # -- Alertmanager tls secret for ssl cert
+    tlsSecret:
+    # -- OIDC proxy image repo
+    oidcProxyImageRepo: ""
+    # -- OIDC proxy image tag
+    oidcProxyImageTag: ""
+    # -- Alertmanager oidc group Read Write access
+    oidcGroupRw: []
+    # -- Alertmanager oidc group Read Only access
+    oidcGroupRo: []
+    # -- Container resources
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 150m
+        memory: 256Mi
+    # -- Priority class assigned to the Pods
+    priorityClassName: ""
+    # -- Disable alertmanager Vault integration as default
+    karma:
+      enabled: false
+      htsecret: ""
+      htsecretkey: ""
+    vault:
+      enabled: false
+      serviceAccount:
+        create: false
+      karma:
+        enabled: false
+        karmaKeyPath: ""
+    syncPolicy:
+      # -- Disable Auto Sync for Argocd App
+      disableAuto:
+      # -- Disable Auto Prune for Argocd App
+      disablePrune:
+      # -- Disable Self Heal for Argocd App
+      disableSelfHeal:
+
+  karma:
+    # -- enable Karma
+    enabled: false
+    # -- Karma helm chart revision
+    targetRevision: 0.1.0
+    # -- Karama oidc image repo
+    oidcProxyImageRepo: "europe-docker.pkg.dev/irn-71889-adm-dev-ope-68/docker-gke-irn70740/oauth2"
+    # -- Karma oidc image tag
+    oidcProxyImageTag: "v7.3.0"
+    # -- Karma image repo
+    karmaImageRepo: "europe-docker.pkg.dev/irn-71889-adm-ope-ope-d2/docker-shared-gke-irn70740/karma"
+    # -- Add resources limits and request.
+    karmaImageTag: "v0.0.1"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 220Mi
+      limits:
+        cpu: 100m
+        memory: 220Mi
+    url: ""
+    oidc:
+      # -- Enable oidc
+      enabled: false
+    # -- Pod's priority.
+    priorityClassName: "infra"
+    alertmanagerUris:
+      alertmanager: {}
+    certificates:
+      alertManagerSecret:
+        name: ""
+    vault:
+      enabled: false
+    syncPolicy:
+      # -- (bool) Disable Auto Sync for trivy operator
+      disableAuto:
+      # -- (bool) Disable Auto Prune for operator operator App
+      disablePrune:
+      # -- (bool) Disable Self Heal for operator operator App
+
+  dex:
+    # -- enables dex app
+    enabled: true
+    # -- Revision of the dex helm chart
+    targetRevision: 0.9.0
+    # -- Dex docker image repo
+    dexImageRepo: ""
+    # -- Dex docker image tag
+    dexImageTag: ""
+    # -- Override default url (<app>.<prefix>.<env>.<baseURL>).
+    url:
+    # -- Ingress class to use for Dex. Should have already installed Nginx Ingress Controller on the k8s cluster
+    ingressClass: ""
+    # -- Dex tls secret for ssl cert
+    tlsSecret:
+    # -- Dex connectors
+    dexConnectors: []
+    # -- Disable dex Vault integration as default
+    vault:
+      enabled: false
+      serviceAccount:
+        create: false
+    syncPolicy:
+      # -- Disable Auto Sync for Argocd App
+      disableAuto:
+      # -- Disable Auto Prune for Argocd App
+      disablePrune:
+      # -- Disable Self Heal for Argocd App
+      disableSelfHeal:
+
+  prometheus:
+    # -- Enable Prometheus app
+    enabled: true
+    # -- Revision of the prometheus helm chart
+    targetRevision: 0.5.0
+    # -- Prometheus docker image repo
+    prometheusImageRepo: ""
+    # -- Prometheus docker image tag
+    prometheusImageTag: ""
+    # -- Ingress class to use for Prometheus. Should have already installed Nginx Ingress Controller on the k8s cluster
+    ingressClass: ""
+    # -- Override default url (<app>.<prefix>.<env>.<baseURL>).
+    url:
+    # -- Prometheus tls secret for ssl cert
+    tlsSecret:
+    # -- Prometheus external Label (env)
+    externalLabels:
+    # -- Prometheus Label (promLabel: prometheus-operator-prometheus)
+    promLabel: ""
+    rules:
+      # -- Enable prometheus default rules
+      enabled: true
+      # -- Revision of the Prometheus rules helm chart
+      targetRevision: 0.1.0
+    # -- OIDC proxy image tag
+    oidcImageRepo: ""
+    # -- OIDC proxy image tag
+    oidcImageTag: ""
+    # -- Prometheus oidc group Read Write access
+    oidcGroupRw: []
+    # -- Prometheus oidc group Read Only access
+    oidcGroupRo: []
+    # -- resources for prometheus pod
+    resources:
+      limits:
+        memory: 15Gi
+    # -- Priority class assigned to the Pods
+    priorityClassName: ""
+    syncPolicy:
+      # -- Disable Auto Sync for Argocd App
+      disableAuto:
+      # -- Disable Auto Prune for Argocd App
+      disablePrune:
+      # -- Disable Self Heal for Argocd App
+      disableSelfHeal:
+
+  prometheusOperator:
+    # -- enables prometheusOperator
+    enabled: true
+    # -- Prometheus Operator helm chart revision
+    targetRevision: 0.12.0
+    # -- Prom Operator docker image repo
+    prometheusOperatorImageRepo: ""
+    # -- Prom Operator docker image tag on DTR repo
+    prometheusOperatorImageTag: ""
+    # -- kubeWebhookCertgen docker image repo
+    kubeWebhookCertgenImageRepo: ""
+    # -- Kubewebhook Cert Gen image tag on DTR repo
+    kubeWebhookCertgenImageTag: ""
+    # -- Prom Config Reloader docker image repo
+    prometheusConfigReloaderImageRepo: ""
+    # -- Prom Config Reloader docker image tag on DTR repo
+    prometheusConfigReloaderImageTag: ""
+    # -- Node Exporter docker image repo
+    nodeExporterImageRepo: ""
+    # -- Node Exporter docker image tag
+    nodeExporterImageTag: ""
+    # -- kube-state-metrics docker image repo
+    kubeStateMetricsImageRepo: ""
+    # -- kube-state-metrics docker image tag
+    kubeStateMetricsImageTag: ""
+    # -- Priority class assigned to the Pods
+    priorityClassName: ""
+    syncPolicy:
+      # -- Disable Auto Sync for Argocd App
+      disableAuto:
+      # -- Disable Auto Prune for Argocd App
+      disablePrune:
+      # -- Disable Self Heal for Argocd App
+      disableSelfHeal:
+
+  grafana:
+    # -- enables grafana app
+    enabled: true
+    # -- Ingress class to use for grafana. Should have already installed Nginx Ingress Controller on the k8s cluster
+    ingressClass: ""
+    # -- Revision of the grafana helm chart
+    targetRevision: 0.7.4
+    # -- Grafana docker image repo
+    grafanaImageRepo: "europe-docker.pkg.dev/irn-71889-adm-ope-ope-d2/docker-shared-gke-irn70740/grafana"
+    # -- Grafana docker image tag
+    grafanaImageTag: "9.5.2"
+    # -- k8s-sidecar docker image repo
+    k8sSideCarImageRepo: "europe-docker.pkg.dev/irn-71889-adm-ope-ope-d2/docker-shared-gke-irn70740/k8s-sidecar"
+    # -- k8s-sidecar docker image tag on DTR repo
+    k8sSideCarImageTag: "1.22.0"
+    # -- Priority class assigned to the Pods
+    priorityClassName: infra
+    syncPolicy:
+      # -- Disable Auto Sync for Argocd App
+      disableAuto:
+      # -- Disable Auto Prune for Argocd App
+      disablePrune:
+      # -- Disable Self Heal for Argocd App
+      disableSelfHeal:
+    # -- Grafana oidc group Admin Access
+    oidcGroupAdmin: ""
+    # -- Grafana oidc group Editor Access
+    oidcGroupEditor: ""
+    # -- Grafana oidc group Viewer Access
+    oidcGroupViewer: ""
+    # -- Disable grafana vault integration as default
+    vault:
+      enabled: false
+      serviceAccount:
+        create: false
+
+  kubed:
+    dynatraceMonitoring:
+      enabled: false
+    prometheus:
+      servicemonitor:
+        enabled: false
+    # -- enables kubed app
+    enabled: true
+    # -- Revision of the kubed helm chart
+    targetRevision: 0.1.7
+    # -- kubedRegistry
+    kubedRegistryName: ""
+    # -- Kubed operator container image
+    kubedRepositoryName: ""
+    # -- Kubed operator container imageTag
+    kubedImageTag: v0.13.0
+    # -- Send usage events to Google Analytics
+    enableAnalytics: true
+    # --  If true, installs Kubed operator as critical addon
+    enableAddon: true
+    # -- set cluster-name to something meaningful to you, say, prod, prod-us-east, qa, etc.
+    clusterName: ""
+    # -- healthcheck configures the readiness and liveliness probes for the operator pod.
+    enableHealthCheck: true
+    syncPolicy:
+      # -- Disable Auto Sync for Argocd App
+      disableAuto:
+      # -- Disable Auto Prune for Argocd App
+      disablePrune:
+      # -- Disable Self Heal for Argocd App
+      disableSelfHeal:
+
+  velero:
+    # -- enables velero app
+    enabled: true
+    # -- Revision of the velero helm chart
+    targetRevision: 0.5.2
+    # -- velero docker image repo
+    veleroImageRepo: ""
+    # -- velero docker image tag
+    veleroImageTag: ""
+    # -- kubectl docker image repo
+    kubectlImageRepo: ""
+    # -- kubectl docker image tag
+    kubectlImageTag: ""
+    # -- velero plugin for gcp docker image repo
+    veleroPluginGcpImageRepo: ""
+    # -- velero docker image tag
+    veleroPluginGcpImageTag: ""
+    # -- Override the default namespace where to deploy velero (default to velero)
+    # @default -- `velero`
+    namespace: ""
+    # -- Google service Account to use to access the gcs bucket containing backups (format <NAME>@<GOOGLE_PROJECT_ID>.iam.gserviceaccount.com)
+    gsa: ""
+    # -- Name of the gcs bucket where to store the backups (default to velero-bkp-bucket)
+    # @default -- `velero-bkp-bucket`
+    bucket: ""
+    configConnector:
+      enabled: false
+    # -- Enables monitoring Through Dynatrace
+    dynatrace:
+      enabled: false
+    # -- overrides the global sync policy for the velero application
+    syncPolicy:
+      # -- (bool) Disable Auto Sync for velero App
+      disableAuto:
+      # -- (bool) Disable Auto Prune for velero App
+      disablePrune: true
+      # -- (bool) Disable Self Heal for velero App
+      disableSelfHeal:
+
+  certManager:
+    # -- enables Cert-Manager app
+    enabled: false
+    # -- Revision of the Cert-Manager helm chart
+    targetRevision: 3.1.0
+    # -- Certmanager Controller docker image repo
+    certmanagerControllerImageRepo: ""
+    # -- Certmanager CaInjector docker image repo
+    certmanagerCaInjectorImageRepo: ""
+    # -- Certmanager Webhook docker image repo
+    certmanagerWebhookImageRepo: ""
+    # -- Certmanager controller image repo
+    certmanagerCtrlImageRepo: ""
+    # -- Certmanager cloud DNS project-id for domains using letsencrypt (default to cluster.gcpProjectId)
+    cloudDnsProjectId:
+    # -- Override the default namespace where to deploy cert-manager (default to cert-manager)
+    namespace:
+    # -- Google service Account to use to manage dns entries (format <NAME>@<GOOGLE_PROJECT_ID>.iam.gserviceaccount.com)
+    gsa: ""
+    # -- resources for cert-manager pod
+    resources:
+      limits:
+        cpu: 150m
+        memory: 2000Mi
+    cainjector:
+      # -- resources for cainjector pod
+      resources:
+        limits:
+          cpu: 150m
+          memory: 2000Mi
+    webhook:
+      # -- resources for webhook pod
+      resources:
+        limits:
+          cpu: 150m
+          memory: 320Mi
+    # -- principal certificate to create
+    mainCert: ""
+    # -- add extra-certs for other usages like external or ww ingresses
+    additionnalCerts: []
+
+
+    configConnector:
+      enabled: false
+      iamPolicyMember:
+        gsa: "<TO_CHANGE>"
+      workloadIdentity:
+        gsa:
+          create: false
+          name: "<TO_CHANGE>"
+        abandon: true
+        ksa:
+          name: cert-manager
+          namespace: cert-manager
+
+    # - name:
+    #   issuerRef: letsencrypt-prod
+    #   issuerKind: ClusterIssuer
+    #   dnsnames: [""]
+    # -- Disables the sync policy for the cert-manager application
+    # See below
+    syncPolicy:
+      # -- (bool) Disable Auto Sync for cert-manager App
+      disableAuto:
+      # -- (bool) Disable Auto Prune for cert-manager App
+      disablePrune:
+      # -- (bool) Disable Self Heal for cert-manager App
+      disableSelfHeal:
+    # -- Email used to register to lets encrypt
+    letsEncryptEmail: admin@renault.com
+
+
+  gatekeeper:
+    # -- enables gatekeeper
+    enabled: false
+    # -- Revision of the gatekeeper helm chart
+    targetRevision: 0.8.5
+    # -- Override the default namespace where to deploy gatekeeper (default to gatekeeper-system)
+    # @default -- `gatekeeper-system`
+    namespace: ""
+    # -- Gatekeeper docker image Repository
+    gatekeeperImageRepo: "europe-docker.pkg.dev/irn-71889-adm-ope-ope-d2/docker-shared-gke-irn70740/gatekeeper"
+    # -- Gatekeeper CRDs docker image Repository
+    gatekeeperCrdImageRepo: "europe-docker.pkg.dev/irn-71889-adm-ope-ope-d2/docker-shared-gke-irn70740/gatekeeper-crds"
+    # -- Gatekeeper release
+    gatekeeperRelease: "v3.12.0"
+    # -- Gatekeeper post Install docker image Repository
+    postInstallImageRepo: "europe-docker.pkg.dev/irn-71889-adm-ope-ope-d2/docker-shared-gke-irn70740/gatekeeper-crds"
+    # -- Gatekeeper docker image Tag
+    gatekeeperImageTag: "v3.12.0"
+    probeWebhookImageRepo: "europe-docker.pkg.dev/irn-71889-adm-ope-ope-d2/docker-shared-gke-irn70740/curl"
+    probeWebhookImageTag: "7.83.1"    
+    # -- Enable auditFromCache
+    auditFromCache: true
+    # -- prometheus config
+    prometheus:
+      # -- Enable Prometheus app
+      enabled: false
+      serviceMonitor:
+        # -- Enable service monitor
+        enabled: false
+    grafanaDashboard:
+      # -- Enable grafana dashboard
+      enabled: true
+    controllerManager:
+      # -- The resource request/limits for the controller Manager container image
+      port: 10250
+      resources:
+        limits:
+          cpu: 1500m
+          memory: 4Gi
+        requests:
+          cpu: 100m
+          memory: 2Gi
+    audit:
+      # -- The resource request/limits for the audit container image
+      resources:
+        limits:
+          cpu: 1505m
+          memory: 1820Mi
+        requests:
+          cpu: 1200m
+          memory: 840Mi
+    syncPolicy:
+      # -- (bool) Disable Auto Sync for gatekeeper App
+      disableAuto:
+      # -- (bool) Disable Auto Prune for gatekeeper App
+      disablePrune:
+      # -- (bool) Disable Self Heal for gatekeeper App
+      disableSelfHeal:
+
+  vaultAgent:
+    # -- enables Vault Agent app
+    enabled: false
+    # -- Revision of the Vault Agent helm chart
+    targetRevision: 1.11.0
+    # -- Vault k8s docker image Repo
+    vaultk8sImageRepo: ""
+    # -- Vault k8s docker image Tag
+    vaultk8sImageTag: ""
+    # -- Vault Agent docker image Repo
+    agentImageRepo: ""
+    # -- Vault Agent docker image tag
+    agentImageTag: ""
+    # -- Override the default namespace where to deploy Vault Agent (default to vault-agent-injector)
+    # @default -- `vault-agent-injector`
+    namespace:
+    # -- Mount Path of the Vault Kubernetes Auth Method.
+    authPath:
+    # -- External vault server address to be used by the injector
+    externalVaultAddr:
+    # -- resources for vault-agent pod
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 250m
+      limits:
+        memory: 256Mi
+        cpu: 250m
+    # -- Disables the sync policy for the cert-manager application
+    # See below
+    syncPolicy:
+      # -- (bool) Disable Auto Sync for Vault Agent App
+      disableAuto:
+      # -- (bool) Disable Auto Prune for Vault Agent App
+      disablePrune:
+      # -- (bool) Disable Self Heal for Vault Agent App
+      disableSelfHeal:
+
+  argocd:
+    # -- enables argocd app
+    enabled: true
+    # -- Revision of the argocd helm chart
+    targetRevision: 0.7.0
+    # -- argocd docker image repo
+    argocdImageRepo: ""
+    # -- argocd docker image tag
+    argocdImageTag: ""
+    # -- redis docker image repo
+    redisImageRepo: ""
+    # -- redis docker image tag
+    redisImageTag: ""
+    # -- annotations of argocd ingress
+    annotations: {}
+    # -- hosts Url of argocd application
+    hosts: ""
+    # -- oidc Config Name of argocd application
+    oidcConfigName: ""
+    # -- issuer Url of argocd application
+    issuerUrl: ""
+    # -- oidc Config Client of argocd application
+    oidcConfigClientID: ""
+    # -- oidc Config Client Secret of argocd application
+    oidcConfigClientSecret:
+    # -- Secret name for the tls of argocd application
+    tlsSecretName: ""
+    # -- The repositories to configure for argocd application
+    repositories: {}
+    # -- The credentials of repositories to configure for argocd application
+    credentialTemplates: {}
+    # -- enable admin login
+    admin:
+      enabled: true
+    # -- the additional rbac policies of argocd application
+    AdditionalRbacPolicies: {}
+    # -- extra k8s objects to create
+    extraObjects: []
+    controller:
+      # -- Annotations to be added for pod. added for dynatrace scraping.
+      podAnnotations:
+        metrics.dynatrace.com/path: /metrics
+        metrics.dynatrace.com/port: "8082"
+        metrics.dynatrace.com/scrape: "true"
+        metrics.dynatrace.com/secure: "false"
+      # -- resources for the controller pod
+      resources:
+        limits:
+          cpu: 4
+          memory: 4Gi
+        requests:
+          cpu: 1000m
+          memory: 512Mi
+    grafanaDashboard:
+      # -- Enable grafana dashboard
+      enabled: true
+    repoServer:
+      # -- Annotations to be added for pod. added for dynatrace scraping.
+      podAnnotations:
+        metrics.dynatrace.com/path: /metrics
+        metrics.dynatrace.com/port: "8084"
+        metrics.dynatrace.com/scrape: "true"
+        metrics.dynatrace.com/secure: "false"
+      # -- resources for the repoServer pod
+      resources:
+        limits:
+          cpu: 2
+          memory: 2Gi
+        requests:
+          cpu: 1
+          memory: 512Mi
+
+    server:
+      # -- Annotations to be added for pod. added for dynatrace scraping.
+      podAnnotations:
+        metrics.dynatrace.com/path: /metrics
+        metrics.dynatrace.com/port: "8083"
+        metrics.dynatrace.com/scrape: "true"
+        metrics.dynatrace.com/secure: "false"
+      # -- resources for the server pod
+      resources:
+        limits:
+          cpu: 2
+          memory: 2Gi
+        requests:
+          cpu: 1
+          memory: 512Mi
+
+    # -- Disables the sync policy for the Argocd application
+    # See below
+    syncPolicy:
+      # -- (bool) Disable Auto Sync for Argocd App
+      disableAuto:
+      # -- (bool) Disable Auto Prune for Argocd App
+      disablePrune:
+      # -- (bool) Disable Self Heal for Argocd App
+      disableSelfHeal:
+
+  nginxIngress:
+    # -- enables nginxIngress app
+    enabled: false
+    # -- enable dynatrace for scarpping nginx ingress
+    dynatraceMonitoring:
+      enabled: false
+    # -- Controller Image
+    controllerImage: {}
+      # registry: ""
+      # image: ""
+      # digest: ""
+      # tag: ""
+    # -- Default backend config
+    defaultBackend: {}
+      # image:
+        # registry: ""
+        # image: ""
+        # digest: ""
+        # tag: ""
+    # -- Ovveride the ArgoCD AppProject this appplication belongs to
+    project: ingress-nginx
+    # -- Revision of the nginxIngress helm chart
+    targetRevision: 4.2.0
+    # -- Override the default namespace where to deploy nginxIngress (default to infra-nginx-ingress)
+    namespace:
+    prometheus:
+      # -- Enables Prometheus Operator monitoring
+      enabled: true
+      # -- Enables grafana Dashboard
+      grafanaDashboard:
+        enabled: true
+    metrics:
+      # -- Enable metrics
+      enabled: true
+      serviceMonitor:
+        # -- Enable serviceMonitor
+        enabled: true
+        # -- additional Labels for serviceMonitor
+        additionalLabels:
+          prometheus: prometheus-operator-prometheus
+    admissionWebhooks:
+      patch:
+        image: {}
+    # list of controllers (internal, external ...)
+
+
+    controllers:
+      # -- Ingress class for the controller
+      - ingressClass: nginx-internal
+        # -- controller resource kind by default Deployment.
+        kind: Deployment
+        # -- add custom configuration options to Nginx
+        config: {}
+          # annotation-value-word-blocklist: "load_module,lua_package,_by_lua,location,root,proxy_pass,serviceaccount,{,},',\"
+          # enable-underscores-in-headers: "true"
+          # server-tokens: "false"
+          # enable-modsecurity: "false"
+          # enable-owasp-modsecurity-crs: "false"
+        # -- resources for controller pod
+        resources:
+          requests:
+            cpu: 500m
+            memory: 4000Mi
+        # -- Node labels for controller pod assignment
+        ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
+        nodeSelector:
+          kubernetes.io/os: linux
+        # -- autoscale Nginx controller
+        autoscaling: {}
+          # enabled: true
+          # minReplicas: 1
+          # maxReplicas: 11
+          # targetCPUUtilizationPercentage: 50
+          # targetMemoryUtilizationPercentage: 50
+        # -- configure service for Nginx
+        service: {}
+          # enabled: true
+          # annotations:
+          #   cloud.google.com/load-balancer-type: "Internal"
+          # loadBalancerIP: "172.20.164.20"
+          # externalTrafficPolicy: "Local"
+          # type: LoadBalancer
+
+    # -- Disables the sync policy for the nginxIngress application
+    # See below
+    syncPolicy:
+      # -- Disable Auto Sync for nginxIngress App
+      disableAuto:
+      # -- Disable Auto Prune for nginxIngress App
+      disablePrune:
+      # -- Disable Self Heal for nginxIngress App
+      disableSelfHeal:
+
+  goldilocks:
+    # -- enables goldilocks app
+    enabled: false
+    # -- Revision of the goldilocks helm chart
+    targetRevision: 0.2.5
+    # -- goldilocks docker image repo
+    goldilocksImageRepo: "europe-docker.pkg.dev/irn-71889-adm-ope-ope-d2/docker-shared-gke-irn70740/goldilocks"
+    # -- goldilocks docker image tag
+    goldilocksImageTag: ""
+    # -- Override the default namespace where to deploy goldilocks (default to goldilocks)
+    # @default -- `goldilocks`
+    namespace:
+    controller:
+      resources:
+        limits:
+          cpu: 500m
+          memory: 500Mi
+        requests:
+          cpu: 500m
+          memory: 100Mi
+    dashboard:
+      # -- Ingress class for dashboard. Should have already installed Nginx Ingress Controller on the k8s cluster
+      ingressClass: ""
+      # -- dashboard CPU/RAM resources
+      resources:
+        limits:
+          cpu: 100m
+          memory: 128Mi
+        requests:
+          cpu: 25m
+          memory: 32Mi
+    oauth2Proxy:
+      oauth2ProxyImageRepo: "europe-docker.pkg.dev/irn-71889-adm-ope-ope-d2/docker-shared-gke-irn70740/oauth2-proxy"
+      resources:
+        limits:
+          cpu: 100m
+          memory: 50Mi
+        requests:
+          cpu: 5m
+          memory: 30Mi
+      extraVolumes: []
+      extraVolumeMounts: []
+      oidcGroupRo:
+        - "irn-70740-gke-support"
+        - "irn-70740-gke-operators"
+    vault:
+      enabled: false
+      serviceAccount:
+        create: false
+    syncPolicy:
+      # -- (bool) Disable Auto Sync
+      disableAuto:
+      # -- (bool) Disable Auto Prune
+      disablePrune:
+      # -- (bool) Disable Self Heal
+      disableSelfHeal:
+
+  externalSecretsOperator:
+    # -- enables external Secrets Operator app
+    enabled: true
+    # -- Revision of the external Secrets Operator helm chart
+    targetRevision: 0.2.0
+    # -- external Secrets Operator docker image repo
+    externalSecretsImageRepo: europe-docker.pkg.dev/irn-71889-adm-ope-ope-d2/docker-shared-gke-irn70740/external-secrets
+    # -- external Secrets Operator docker image tag
+    externalSecretsImageTag: v0.4.2
+    # -- external Secrets Operator image pull policy
+    imagePullPolicy: Always
+    # -- Override the default namespace where to deploy external-secrets (default to external-secrets)
+    # @default -- `external-secrets`
+    namespace: ""
+    # -- external Secrets Operator service account configuration
+    serviceAccount:
+      create: true
+      name: sa-external-secrets
+      annotations: {}
+    # -- external Secrets Operator environement variables
+    env: []
+    # -- resources for external Secrets Operator pod
+    resources:
+      limits:
+        cpu: 256m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    syncPolicy:
+      # -- (bool) Disable Auto Sync
+      disableAuto:
+      # -- (bool) Disable Auto Prune
+      disablePrune:
+      # -- (bool) Disable Self Heal
+      disableSelfHeal:
+
+  msteams:
+    # -- enables msteams-operator app
+    enabled: true
+    # -- Revision of the externalSecrets helm chart
+    targetRevision: 0.1.5
+    # -- Override the default namespace where to deploy msteams
+    # @default -- `monitoring`
+    namespace: ""
+    # -- name override
+    nameOverride: ""
+    # -- full name override
+    fullnameOverride: ""
+    # -- Labels to apply to all operator resources
+    commonLabels: {}
+    # -- Image repository operator
+    imageRepo: europe-docker.pkg.dev/irn-71889-adm-ope-ope-d2/docker-shared-gke-irn70740/msteams-operator
+    # -- Tag of the image of operator
+    imageTag: "0.4.0"
+    kubeRbacProxy:
+      # -- Image repository for rbac proxy
+      imageRepo: gcr.io/kubebuilder/kube-rbac-proxy
+      # -- Tag of the image of rbac proxy
+      imageTag: v0.5.0
+    # -- resources limits and request.
+    resources:
+      limits:
+        cpu: 200m
+        memory: 200Mi
+      requests:
+        cpu: 100m
+        memory: 150Mi
+    serviceAccount:
+      # -- When `true`, create serviceAccount with `serviceAccount.name`. If `serviceAccount.name` is empty, use `.Chart.fullname` value.
+      create: true
+      # -- Name of the ServiceAccount to use. If `serviceAccount.create` is `false` and no name is defined, use `default`.
+      name: ""
+    admissionWebhook:
+      # -- Enable admission webhooks.
+      enabled: true
+      # -- Use kube-webhook-certgen to generate webhook certs and patch webhooks
+      patchEnabled: true
+      # -- Image repository for kube-webhook-certgen
+      patchImageRepo: jettech/kube-webhook-certgen
+      # -- Tag of the image of kube-webhook-certgen
+      patchImageTag: v1.5.2
+      # -- Use certmanager to generate webhook certs. Need cert-manager deployed into k8s cluster
+      certManagerEnabled: false
+    syncPolicy:
+      # -- (bool) Disable Auto Sync
+      disableAuto:
+      # -- (bool) Disable Auto Prune
+      disablePrune:
+      # -- (bool) Disable Self Heal
+      disableSelfHeal:
+
+  crossplane:
+    # -- enables crossplane app
+    enabled: false
+    # -- Revision of the crossplane helm chart
+    targetRevision: 1.4.2
+    # -- crossplane docker image repo
+    crossplaneImageRepo: europe-docker.pkg.dev/irn-71889-adm-ope-ope-d2/docker-shared-gke-irn70740/crossplane
+    # -- crossplane docker image tag
+    crossplaneImageTag: v1.4.1
+    # -- Override the default namespace where to deploy crossplane (default to crossplane-system)
+    # @default -- `crossplane-system`
+    namespace:
+    # -- Name of pvc to be created for package cache.
+    pvcCacheName:
+    # -- Size limit for package cache.
+    pvcCacheSize:
+    syncPolicy:
+      # -- (bool) Disable Auto Sync
+      disableAuto:
+      # -- (bool) Disable Auto Prune
+      disablePrune:
+      # -- (bool) Disable Self Heal
+      disableSelfHeal:
+    xfn:
+      enabled: false
+      image:
+        repository: "<TO_CHANGE>"
+        tag: "<TO_CHANGE>"
+      args:
+      - --debug
+
+  mirrorregistry:
+    # -- enables mirror-registry app
+    enabled: false
+    # -- Override the default namespace where to deploy mirror-registry
+    namespace: ""
+    # -- Revision of the mirror-registry helm chart
+    targetRevision: 0.2.0
+    # -- crossplane docker image repo
+    mirrorregistryImageRepo: europe-docker.pkg.dev/irn-71889-adm-ope-ope-d2/docker-shared-gke-irn70740/mirror-registry
+    kubeRbacProxy:
+      imageRepo: gcr.io/kubebuilder/kube-rbac-proxy
+    resources:
+      limits:
+        cpu: 100m
+        memory: 100Mi
+      requests:
+        cpu: 100m
+        memory: 50Mi
+    admissionWebhook:
+      # -- Enable admission webhooks.
+      enabled: true
+      patchEnabled: true
+      # -- Image repository for kube-webhook-certgen
+      patchImageRepo: k8s.gcr.io/ingress-nginx/kube-webhook-certgen
+      # -- Use certmanager to generate webhook certs. Need cert-manager deployed into k8s cluster
+      certManagerEnabled: false
+    prometheus:
+      # -- Enables prometheus monitoring
+      enabled: true
+      serviceMonitor:
+        # -- Enables prometheus operator service monitor
+        enabled: true
+      rules:
+        # -- If `true`, create prometheus rules to monitor mirror synchronizations
+        enabled: true
+      grafanaDashboard:
+        # -- If `true`, deploy grafana dashboard
+        enabled: true
+
+  starboardOperator:
+    # -- enable Starboard Operator
+    enabled: false
+    # -- Revision of the Starboard Operator helm chart
+    targetRevision: 0.1.6
+    # -- Starboard Operator docker image Repo
+    starboardOperatorImageRepo: ""
+    # -- Starboard Operator docker image Tag
+    starboardOperatorImageTag: ""
+    # -- Trivy image Repo
+    trivyImageRepo: ""
+    # -- Trivy image Tag
+    trivyImageTag: ""
+    # -- comma separated list of severity levels reported by Trivy.
+    trivySeverity: HIGH,CRITICAL
+    # -- kubeBench Image Repo
+    kubeBenchImageRepo: ""
+    # -- kubeBench Image Tag
+    kubeBenchImageTag: ""
+    # -- Override the default namespace where to deploy Starboard Operator (default to starboard-operator)
+    # @default -- `starboard-operator`
+    namespace:
+    # See below
+    # -- resources for Starboard Operator pod
+    resources:
+      requests:
+        memory: 512Mi
+        cpu: 250m
+      limits:
+        memory: 1Gi
+        cpu: 900m
+    syncPolicy:
+      # -- (bool) Disable Auto Sync for Starboard Operator App
+      disableAuto:
+      # -- (bool) Disable Auto Prune for Starboard Operator App
+      disablePrune:
+      # -- (bool) Disable Self Heal for Starboard Operator App
+
+  starboardExporter:
+    # -- enable Starboard Exporter
+    enabled: fasle
+    # -- Revision of the Starboard Exporter helm chart
+    targetRevision: 0.1.0
+    # -- Starboard Exporter docker image Repo
+    starboardExporterImageRepo: ""
+    # -- Starboard Exporter docker image Tag
+    starboardExporterImageTag: ""
+    # -- kubeRbacProxy Image Repo
+    kubeRbacProxyImageRepo: ""
+    # -- kubeRbacProxy Image Tag
+    kubeRbacProxyImageTag: ""
+    # -- resources for Starboard Exporter pod
+    resources:
+      requests:
+        memory: 512Mi
+        cpu: 250m
+      limits:
+        memory: 1Gi
+        cpu: 900m
+    syncPolicy:
+      # -- (bool) Disable Auto Sync for Starboard Exporter App
+      disableAuto:
+      # -- (bool) Disable Auto Prune for Starboard Exporter App
+      disablePrune:
+      # -- (bool) Disable Self Heal for Starboard Exporter App
+
+  trivyOperator:
+    # -- enable Trivy Operator
+    enabled: false
+    # -- Helm chart revision
+    targetRevision: 0.0.9
+    # -- comma separated list of severity levels reported by Trivy.
+    trivySeverity: HIGH,CRITICAL
+    # -- Trivy image Repo
+    trivyOperatorImageRepo: ""
+    # -- Trivy image Repo ref
+    trivyImageRepo: ""
+    # -- resources for Trivy Operator pod
+    resources:
+      requests:
+        memory: 900Mi
+        cpu: 100m
+      limits:
+        memory: 2Gi
+        cpu: 500m
+    syncPolicy:
+      # -- (bool) Disable Auto Sync for trivy operator
+      disableAuto:
+      # -- (bool) Disable Auto Prune for operator operator App
+      disablePrune:
+      # -- (bool) Disable Self Heal for operator operator App
+
+  blackboxExporter:
+    # -- enable Blackbox Exporter
+    enabled: false
+    # -- Revision of the Blackbox Exporter helm chart
+    targetRevision: 1.2.4
+    # -- Blackbox Exporter docker image Repo
+    blackboxExporterImageRepo: ""
+    # -- Blackbox Exporter docker image Tag
+    blackboxExporterImageTag: ""
+    # -- hsm's url
+    hsmExternalUrl: ""
+    # -- hsmPreprod enable
+    hsmPreprodEnable: true
+    # -- hsmPreprod's url
+    hsmPreprodExternalUrl: ""
+    # -- proxy's url
+    proxyExternalUrl: ""
+    # -- vault's url
+    vaultExternalUrl: ""
+    # -- resources for Blackbox Exporter pod
+    resources: {}
+    # -- targets to monitor by Blackbox Exporter
+    targets: {}
+    syncPolicy:
+      # -- (bool) Disable Auto Sync for Blackbox Exporter App
+      disableAuto:
+      # -- (bool) Disable Auto Prune for Blackbox Exporter App
+      disablePrune:
+      # -- (bool) Disable Self Heal for Blackbox Exporter App
+
+  dynaKubeOperator:
+    # -- enable dynakube Operator
+    enabled: false
+    # -- Revision of the dynakube Operator helm chart
+    targetRevision: 0.1.26
+    dynaKubeOperatorImageRepo: ""
+    dynaKubeOperatorImageTag: ""
+    # -- Dynatrace noproxy URLs
+    noProxy: ""
+    csiDriver:
+      enabled: false
+    networkZone: ""
+    classicFullStack:
+      enabled: true
+      apiUrl: ""
+      oneAgent:
+        args: []
+      activeGate:
+        replicas: 1
+        group: ""
+    cloudNativeFullStack:
+      enabled: false
+    syncPolicy:
+      # -- (bool) Disable Auto Sync for dynaKubeOperator Exporter App
+      disableAuto:
+      # -- (bool) Disable Auto Prune for dynaKubeOperator Exporter App
+      disablePrune:
+      # -- (bool) Disable Self Heal for dynaKubeOperator Exporter App
+    vault:
+      # -- enable vault configuration to fetch secret from vault
+      enabled: false
+
+  oneAgentOperator:
+    # -- enable one Agent Operator
+    enabled: false
+
+  stackdriverExporter:
+    # -- enable Stackdriver Exporter
+    enabled: false
+    # -- Revision of the Stackdriver Exporter helm chart
+    targetRevision: 1.0.0
+    # -- Stackdriver Exporter docker image Repo
+    stackdriverExporterImageRepo: ""
+    # -- Stackdriver Exporter docker image Tag
+    stackdriverExporterImageTag: ""
+    # -- Comma separated values of metrics to monitor
+    stackdriverExporterTypePrefixes: ""
+    syncPolicy:
+      # -- (bool) Disable Auto Sync for Stackdriver Exporter App
+      disableAuto:
+      # -- (bool) Disable Auto Prune for Stackdriver Exporter App
+      disablePrune:
+      # -- (bool) Disable Self Heal for Stackdriver Exporter App
+
+  configConnectorOperator:
+    # -- enable config-connector-operator
+    enabled: false
+    # -- Helm chart revision
+    targetRevision: 1.102.0
+    # -- Image Name
+    imageRepo: gcr.io/gke-release/cnrm/operator
+    # -- Image pull Policy
+    imagePullPolicy: Always
+    # -- Image tag
+    imageTag: "632d682"
+    # -- Resources to apply to the configconnector container
+    resources:
+      limits:
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 512Mi
+    syncPolicy:
+      # -- (bool) Disable Auto Sync for Stackdriver Exporter App
+      disableAuto:
+      # -- (bool) Disable Auto Prune for Stackdriver Exporter App
+      disablePrune:
+      # -- (bool) Disable Self Heal for Stackdriver Exporter App
+
+  configConnector:
+    # -- enable config-connector
+    enabled: false
+    # -- Helm chart revision
+    targetRevision: 1.102.0
+    # Namespaced mode allows to deploy a config connector for specific namespace. Allowing a mapping 1 google projetc = 1 namespace
+    installationMode: namespaced
+    # -- **Only if installationMode=cluster**
+    authentication:
+      # -- Type of authentication used by the KSA to connect to GCP. Values in ["key","workloadIdentity"]
+      type: workloadIdentity
+      # -- **Only if type=workloadIdentity**. GSA Email to map with config connector KSA
+      gsaEmail:
+    syncPolicy:
+      # -- (bool) Disable Auto Sync for Stackdriver Exporter App
+      disableAuto:
+      # -- (bool) Disable Auto Prune for Stackdriver Exporter App
+      disablePrune:
+      # -- (bool) Disable Self Heal for Stackdriver Exporter App
+
+  configConnectorContext:
+    # -- enable config-connector-context
+    enabled: false
+    # -- Helm chart revision
+    targetRevision: 0.1.2
+    # -- Name of Google SA
+    gsaName: ""
+    syncPolicy:
+      # -- (bool) Disable Auto Sync for Stackdriver Exporter App
+      disableAuto:
+      # -- (bool) Disable Auto Prune for Stackdriver Exporter App
+      disablePrune:
+      # -- (bool) Disable Self Heal for Stackdriver Exporter App
+
+  gkeGateway:
+    # -- enables gkeGateway app
+    enabled: false
+    # -- Ovveride the ArgoCD AppProject this appplication belongs to
+    project: gke-gateway
+    # -- Revision of the nginxIngress helm chart
+    targetRevision: 0.1.1
+    # -- Controllers to instantiate multiple gateways
+    controllers:
+        # -- name of the gateway
+      - name: ""
+        # -- gatewayClassName to choose from available classes.
+        gatewayClassName: ""
+        # -- addresses list of compute addresses.
+        addresses: []
+        # -- listeners list of listeners.
+        listeners: []
+    syncPolicy:
+      # -- (bool) Disable Auto Sync for gkeGateway App
+      disableAuto:
+      # -- (bool) Disable Auto Prune for gkeGateway App
+      disablePrune:
+      # -- (bool) Disable Self Heal for gkeGateway App
+
+extraApps:
+
+  cleanupOperator:
+    # -- enable cleanupOperator
+    enabled: false
+    resources:
+      limits:
+        cpu: 50m
+        memory: 500Mi
+      requests:
+        cpu: 50m
+        memory: 100Mi
+
+
+  projectspace:
+    # -- enable projectspace
+    enabled: false
+
+  customResourceExporter:
+    # -- enable customResourceExporter
+    enabled: false
+    # -- Revision of the customResourceExporter helm chart
+    targetRevision: 0.2.13
+    repoImage: europe-docker.pkg.dev/irn-71889-adm-ope-ope-d2/docker-shared-gke-irn70740/custom-resource-exporter
+    exporter:
+      interval: 1h
+      resources: "certificates,externalsecrets,dockerconfigs,vaultconfigs,vaultsecrets,solacescalers,prometheusscalers"
+    grafanaDashboard:
+      enabled: true
+      dashboards:
+        externalSecrets:
+          enabled: true
+
+  infraResourceExporter:
+    # -- enable infraResourceExporter
+    enabled: false
+    # -- Revision of the infraResourceExporter helm chart
+    targetRevision: 0.0.3
+    repoImage: europe-docker.pkg.dev/irn-71889-adm-ope-ope-d2/docker-shared-gke-irn70740/infra-exporter
+    tag: 0.0.3
+    resources:
+      limits:
+        cpu: 100m
+        memory: 100Mi
+      requests:
+        cpu: 100m
+        memory: 50Mi
+    kubeRbacProxy:
+      repo: gcr.io/kubebuilder/kube-rbac-proxy
+      tag: v0.8.0
+    exporter:
+      interval: 1h
+    prometheus:
+      rules:
+        enabled: true
+    grafanaDashboard:
+      enabled: true
+      dashboards:
+        opa:
+          enabled: true
+
+  crossplanePackages:
+    # -- enable crossplanePackages
+    enabled: false
+    providers:
+      kubernetes:
+        image: "europe-docker.pkg.dev/irn-71889-adm-ope-ope-d2/docker-shared-gke-irn70740/provider-kubernetes"
+        imageTag: "v0.6.0"
+        controllerImage: "europe-docker.pkg.dev/irn-71889-adm-ope-ope-d2/docker-shared-gke-irn70740/provider-kubernetes:v0.6.0"
+    configurations:
+      externalSecrets:
+        packageImage: "europe-docker.pkg.dev/irn-71889-adm-dev-ope-68/docker-gke-irn70740/externalsecrets-configuration"
+        packageImageTag: "v0.2.1"
+      autoScaling:
+        enabled: false
+        packageImage: "europe-docker.pkg.dev/irn-71889-adm-dev-ope-68/docker-gke-irn70740/keda-autoscaler-configuration"
+        packageImageTag: "v0.0.1"
+
+  opa:
+    # -- enable opa
+    enabled: false
+
+  monitoringAlerts:
+    # -- enable monitoring alerts
+    enabled: false
+    # -- Revision of the additional-prometheus-rules helm chart
+    targetRevision: "0.1.1"
+    svcsRangeSize: "4096"
+
+  softwareFactory:
+    # -- enable Software factory app installation
+    enabled: false
+    env: ""
+    repoUrl: ""
+
+  hnc:
+    # -- enable hnc
+    enabled: false
+    repoName: "europe-docker.pkg.dev/irn-71889-adm-ope-ope-d2/docker-shared-gke-irn70740"
+    imageName: "hnc-manager"
+
+  compliance:
+    # -- enable compliance app installation
+    enabled: false
+    imageRepo: europe-docker.pkg.dev/irn-71889-adm-ope-ope-d2/docker-shared-gke-irn70740/compliance-tests
+    imageTag: 0.0.9
+
+  priorityClasses:
+    # -- enable priorityClasses
+    enabled: true
+
+  infraSecrets:
+    # -- enable infraSecrets
+    enabled: false
+    artifactRegistry:
+      enabled: true
+
+  projectmonitoring:
+    # -- enable projectmonitoring
+    enabled: false
+
+  oligo:
+    # -- enable oligo
+    enabled: false
+
+  keda:
+    # -- enable/disable keda
+    enabled: false
+    # -- Revision of the keda Operator helm chart
+    targetRevision: 0.4.0
+    # -- repo for operator image
+    operatorImageRepo: europe-docker.pkg.dev/irn-71889-adm-ope-ope-d2/docker-shared-gke-irn70740/keda
+    operatorImageTag: "2.11.0"
+    # -- repo for metrics apiserver image
+    metricsApiserverImageRepo: europe-docker.pkg.dev/irn-71889-adm-ope-ope-d2/docker-shared-gke-irn70740/keda-metrics-apiserver
+    metricsApiserverImageTag: "2.11.0"
+    # -- repo for metrics apiserver image
+    admissionWebhooksImageRepo: europe-docker.pkg.dev/irn-71889-adm-ope-ope-d2/docker-shared-gke-irn70740/keda-admission-webhooks
+    admissionWebhooksImageTag: "2.11.0"
+    priorityClassName: "infra"
+    # -- Install crds
+    crds:
+      install: true
+    # -- Create rbac
+    rbac:
+      create: true
+    # -- Create SA
+    serviceAccount:
+      create: true
+      name: keda-operator
+      automountServiceAccountToken: true
+    # -- svc ports mapping for keda metricserver to kube api http/https
+    service:
+      type: ClusterIP
+      portHttp: 80
+      portHttpTarget: 8080
+      portHttps: 443
+      portHttpsTarget: 10250 # gke private cluster
+    # -- Disable webhook installation (no stable version of the image from the community upstream)
+    webhooks:
+      install: false
+    # -- Prometheus
+    resources:
+      operator:
+        limits:
+          cpu: 1
+          memory: 1000Mi
+        requests:
+          cpu: 100m
+          memory: 100Mi
+      metricServer:
+        limits:
+          cpu: 1
+          memory: 1000Mi
+        requests:
+          cpu: 100m
+          memory: 100Mi
+      webhooks:
+        limits:
+          cpu: 50m
+          memory: 100Mi
+        requests:
+          cpu: 10m
+          memory: 10Mi
+    prometheus:
+      grafanaDashboard:
+        enabled: true
+      metricServer:
+        enabled: false
+        serviceMonitor:
+          enabled: false
+        podMonitor:
+          enabled: false
+      webhooks:
+        enabled: false
+        serviceMonitor:
+          enabled: false
+        podMonitor:
+          enabled: false
+      operator:
+        enabled: false
+        serviceMonitor:
+          enabled: false
+        podMonitor:
+          enabled: false
+        prometheusRules:
+          enabled: false
+    # -- Keda certificates injections
+    certificates:
+      autoGenerated: true

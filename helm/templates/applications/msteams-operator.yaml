@@ -1,0 +1,53 @@
+{{- if .Values.apps.msteams.enabled -}}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  name: msteams-operator
+spec:
+  project: {{ include "msteams.appproject" . }}
+  source:
+    repoURL: {{ .Values.cluster.ociRepoUrl | quote }}
+    targetRevision: {{ .Values.apps.msteams.targetRevision | quote }}
+    chart: msteams-operator
+    helm:
+      values: |
+        nameOverride: {{ .Values.apps.msteams.nameOverride | quote }}
+        fullnameOverride: {{ .Values.apps.msteams.fullnameOverride | quote }}
+        commonLabels:
+          {{- .Values.apps.msteams.commonLabels | toYaml | nindent 10 }}
+        {{- if .Values.cluster.imagePullSecrets }}
+        imagePullSecrets:
+        {{- toYaml .Values.cluster.imagePullSecrets | nindent 8 }}
+        {{- end }}
+        image:
+          repo: {{ .Values.apps.msteams.imageRepo | quote }}
+          tag: {{ .Values.apps.msteams.imageTag | quote }}
+        kubeRbacProxy:
+          image:
+            repo: {{ .Values.apps.msteams.kubeRbacProxy.imageRepo | quote }}
+            tag: {{ .Values.apps.msteams.kubeRbacProxy.imageTag | quote }}
+        resources:
+          {{- .Values.apps.msteams.resources | toYaml | nindent 10 }}
+        serviceAccount:
+          create: {{ .Values.apps.msteams.serviceAccount.create }}
+          name: {{ .Values.apps.msteams.serviceAccount.name | quote }}
+        admissionWebhook:
+          enabled: {{ .Values.apps.msteams.admissionWebhook.enabled }}
+          patch:
+            enabled: {{ .Values.apps.msteams.admissionWebhook.patchEnabled }}
+            image:
+              repository: {{ .Values.apps.msteams.admissionWebhook.patchImageRepo | quote }}
+              tag: {{ .Values.apps.msteams.admissionWebhook.patchImageTag | quote }}
+          certManager:
+            enabled: {{ .Values.apps.msteams.admissionWebhook.certManagerEnabled }}
+    
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: {{ include "msteams.namespace" . | quote }}
+  
+  {{- include "infra.syncPolicy" (list . "msteams" ) | nindent 2 }}
+
+{{- end }}

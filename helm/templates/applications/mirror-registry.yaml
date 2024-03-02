@@ -1,0 +1,56 @@
+{{- if .Values.apps.mirrorregistry.enabled }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mirror-registry
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: {{ include "mirrorregistry.appproject" . }}
+  source:
+    repoURL: {{ .Values.cluster.ociRepoUrl | quote }}
+    targetRevision: {{ .Values.apps.mirrorregistry.targetRevision | quote }}
+    chart: mirror-registry
+    helm:
+      values: |
+        prometheus:
+          enabled: {{ .Values.apps.mirrorregistry.prometheus.enabled }}
+          serviceMonitor:
+            enabled: {{ .Values.apps.mirrorregistry.prometheus.serviceMonitor.enabled }}
+          rules:
+            enabled: {{ .Values.apps.mirrorregistry.prometheus.rules.enabled }}
+          grafanaDashboard:
+            enabled: {{ .Values.apps.mirrorregistry.prometheus.grafanaDashboard.enabled }}
+        {{- if .Values.cluster.imagePullSecrets }}
+        imagePullSecrets:
+        {{- toYaml .Values.cluster.imagePullSecrets | nindent 10 }}
+        {{- end }}
+        image:
+          repo: {{ .Values.apps.mirrorregistry.mirrorregistryImageRepo | quote }}
+        kubeRbacProxy:
+          image:
+            repo: {{ .Values.apps.mirrorregistry.kubeRbacProxy.imageRepo | quote }}
+        resources:
+          {{- .Values.apps.mirrorregistry.resources | toYaml | nindent 10 }}
+        admissionWebhook:
+          enabled: {{ .Values.apps.mirrorregistry.admissionWebhook.enabled }}
+          config:
+            port: {{ .Values.apps.mirrorregistry.admissionWebhook.config.port | default 9443 }}
+        patch:
+          enabled: {{ .Values.apps.mirrorregistry.admissionWebhook.patchEnabled }}
+          image:
+            repository: {{ .Values.apps.mirrorregistry.admissionWebhook.patchImageRepo | quote }}
+        certManager:
+          enabled: {{ .Values.apps.mirrorregistry.admissionWebhook.certManagerEnabled }}
+  ignoreDifferences:
+  - group: admissionregistration.k8s.io
+    kind: ValidatingWebhookConfiguration
+    jsonPointers:
+      - /webhooks/0/failurePolicy
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: {{ include "mirrorregistry.namespace" . | quote }}
+  {{- include "infra.syncPolicy" (list . "mirror-registry" ) | nindent 2 }}
+
+{{- end }}
