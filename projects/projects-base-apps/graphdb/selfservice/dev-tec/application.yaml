@@ -19,9 +19,9 @@ spec:
       parameters:
         - name: "images.graphdb.tag"
           value: 10.5.1
-      values: |
-        defaultArgs:
-        - --graphdb.clusterConfig.nodesCount=1
+      valueFiles:
+        - projects/projects-base-apps/graphdb/selfservice/dev-tec/values.yaml
+
   destination:
     server: https://kubernetes.default.svc
     namespace: graphdb-base
