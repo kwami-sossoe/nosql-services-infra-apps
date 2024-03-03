@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: graphdb-platform-app
+  name: graphdb-platform-argocd-app
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -14,9 +14,13 @@ spec:
     chart: graphdb
     helm:
       version: v3
-      releaseName: graphdb-platform-app
+      releaseName: graphdb-platform-helm-app
       passCredentials: false
       values: |
+        global:
+          imagePullSecrets: []
+          storageClass: "hostpath"
+          imageRegistry: docker.io
         deployment:
           protocol: https
           # -- Ingress related configurations
@@ -25,13 +29,13 @@ spec:
             enabled: false
         graphdb:
           clusterConfig:
-            nodesCount: 1
+            nodesCount: 3
             clusterCreationTimeout: 1200
           #workbench:
           #  subpath: /
           node:
             # Cluster requires license, you have to provision it before deploying this chart
-            # license: graphdb-license
+            license: graphdb-license
             securityContext:
               runAsNonRoot: false
               allowPrivilegeEscalation: false
@@ -144,6 +148,6 @@ spec:
       allowEmpty: false
     syncOptions:
       - Validate=true
-      - CreateNamespace=true
+      - CreateNamespace=false
       - PrunePropagationPolicy=foreground
       - PruneLast=true
