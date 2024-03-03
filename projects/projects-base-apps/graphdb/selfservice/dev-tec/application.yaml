@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: graphdb-platform
+  name: graphdb-platform-app
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -14,7 +14,7 @@ spec:
     chart: graphdb
     helm:
       version: v3
-      releaseName: graphdb-platform
+      releaseName: graphdb-platform-app
       passCredentials: false
       values: |
         deployment:
@@ -136,7 +136,7 @@ spec:
                 - ALL
   destination:
     server: https://kubernetes.default.svc
-    namespace: graphdb-base
+    namespace: graphdb-platform
   syncPolicy:
     automated:
       prune: true
