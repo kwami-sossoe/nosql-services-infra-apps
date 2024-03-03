@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: graphdb-app
+  name: graphdb-platform
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -14,7 +14,7 @@ spec:
     chart: graphdb
     helm:
       version: v3
-      releaseName: graphdb-service
+      releaseName: graphdb-platform
       passCredentials: false
       values: |
         deployment:
