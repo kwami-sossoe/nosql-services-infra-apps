@@ -1,0 +1,37 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: graphdb-app
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: http://maven.ontotext.com/repository/helm-public/
+    targetRevision: 10.5.1
+    chart: graphdb
+    helm:
+      version: v3
+      releaseName: graphdb-service
+      passCredentials: false
+      parameters:
+        - name: "images.graphdb.tag"
+          value: 10.5.1
+      values: |
+        defaultArgs:
+        - --graphdb.clusterConfig.nodesCount=1
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: graphdb-base
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - Validate=true
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
