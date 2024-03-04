@@ -1,7 +1,7 @@
 apiVersion: v2
 appVersion: "0.1.0"
 description: |-
-  Helm Chart to deploy NOSQL SelfServices Infrastructure.
+  Helm chart to deploy NoSQL services infrastructure.
 name: nosql-services-infra-apps
 version: 0.1.0
 maintainers:

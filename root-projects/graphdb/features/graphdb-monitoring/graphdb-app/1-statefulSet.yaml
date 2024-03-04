@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: graphdb-workbench
+spec:
+  serviceName: "graphdb"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: graphdb
+  template:
+    metadata:
+      labels:
+        app: graphdb
+    spec:
+      containers:
+      - name: graphdb
+        image: ontotext/graphdb:10.6.1
+        ports:
+        - containerPort: 7200
+          name: graphdb-workbench
+        volumeMounts:
+        - name: data
+          mountPath: /usr/
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi

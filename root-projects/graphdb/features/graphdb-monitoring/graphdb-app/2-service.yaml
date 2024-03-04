@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: graphdb
+  labels:
+    app: graphdb
+spec:
+  ports:
+  - port: 80
+    name: graphdb-data
+  clusterIP: None
+  selector:
+    app: graphdb
