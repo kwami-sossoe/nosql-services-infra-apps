@@ -10,7 +10,7 @@ spec:
   ports:
   - port: 7200
     targertport: 7200
-    name: graphdb-workbench
+    name: dbworkbench
   selector:
     app: graphdb
     app.kubernetes.io/name: graphdb

@@ -33,13 +33,13 @@ spec:
             memory: 1000Mi
         ports:
         - containerPort: 7200
-          name: graphdb-workbench
+          name: dbworkbench
         volumeMounts:
-        - name: graphdb-workbench
+        - name: dbworkbench
           mountPath: /
   volumeClaimTemplates:
   - metadata:
-      name: graphdb-workbench
+      name: dbworkbench
     spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
