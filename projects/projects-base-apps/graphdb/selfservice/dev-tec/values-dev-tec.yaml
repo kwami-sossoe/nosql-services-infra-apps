@@ -1,20 +1,16 @@
+global:
+  imagePullSecrets: []
+  storageClass: "hostpath"
+  imageRegistry: docker.io
+
 images:
   graphdb:
-    # registry : le registre utilisé est un régistre local à l'environnement DEV-TECH. 
+    # registry : le registre utilisé est un régistre local à l'environnement DEV-TEC
     # Pour tout cluster CaaS, on disposera d'un régistre local, dans lequel l'image ontotext/graphdb est chargée et disponible à êtr eutilisée par le chart helm. 
-    registry: "si-repos-dma.edf.fr:5001"
-    repository: si-repos-dma.edf.fr:5001/ontotext/graphdb
+    registry: docker.io
+    repository: ontotext/graphdb
     # If specified, overrides Chart.AppVersion
     tag: "10.5.1"
-  busybox:
-    repository: busybox
-    tag: "1.36.1"
-  imageCredentials:
-    - registry: "si-repos-dma.edf.fr:5001"
-      username: "readonly"
-      password: "readonly"
-      email: "username@edf.fr"
-      name: "secret"
 
 deployment:
   protocol: https

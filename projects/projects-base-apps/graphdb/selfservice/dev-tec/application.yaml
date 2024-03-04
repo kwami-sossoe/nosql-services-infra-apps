@@ -8,139 +8,22 @@ metadata:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
-  source:
-    repoURL: http://maven.ontotext.com/repository/helm-public/
-    targetRevision: 10.5.1
-    chart: graphdb
-    helm:
-      version: v3
-      releaseName: graphdb-platform-helm-app
-      passCredentials: false
-      values: |
-        global:
-          imagePullSecrets: []
-          storageClass: "hostpath"
-          imageRegistry: docker.io
-        deployment:
-          protocol: https
-          # -- Ingress related configurations
-          # Ingress is enabled as variable added in the helm install command during the bootsraping or during updates 
-          ingress:
-            enabled: false
-        graphdb:
-          clusterConfig:
-            nodesCount: 3
-            clusterCreationTimeout: 1200
-          #workbench:
-          #  subpath: /
-          node:
-            # Cluster requires license, you have to provision it before deploying this chart
-            license: graphdb-license
-            securityContext:
-              runAsNonRoot: false
-              allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: true
-              seccompProfile:
-                type: RuntimeDefault
-              capabilities:
-                drop:
-                  - ALL
-            initContainerSecurityContext:
-              runAsNonRoot: false
-              allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: true
-              seccompProfile:
-                type: RuntimeDefault
-              capabilities:
-                drop:
-                  - ALL
-            # -- Configurations for the GraphDB node startup probe. Misconfigured probe can lead to a failing cluster.
-            startupProbe:
-              httpGet:
-                path: /protocol
-                port: graphdb
-              failureThreshold: 600
-              initialDelaySeconds: 300
-              timeoutSeconds: 5
-              periodSeconds: 30
-            # -- Configurations for the GraphDB node readiness probe. Misconfigured probe can lead to a failing cluster.
-            readinessProbe:
-              httpGet:
-                path: /protocol
-                port: graphdb
-              initialDelaySeconds: 300
-              timeoutSeconds: 5
-              periodSeconds: 30
-            # -- Configurations for the GraphDB node liveness probe. Misconfigured probe can lead to a failing cluster.
-            livenessProbe:
-              httpGet:
-                path: /protocol
-                port: graphdb
-              initialDelaySeconds: 300
-              timeoutSeconds: 5
-              periodSeconds: 30
-            podSpec:
-              podAntiAffinity: false
-          clusterProxy:
-            securityContext:
-              runAsNonRoot: false
-              allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: true
-              seccompProfile:
-                type: RuntimeDefault
-              capabilities:
-                drop:
-                  - ALL
-            serviceType: ClusterIP
-            # -- Configurations for the GraphDB cluster proxy startup probe. Misconfigured probe can lead to a failing cluster.
-            startupProbe:
-              httpGet:
-                path: /proxy/ready
-                port: gdb-proxy-port
-              failureThreshold: 600
-              initialDelaySeconds: 300
-              timeoutSeconds: 5
-              periodSeconds: 30
-            # -- Configurations for the GraphDB cluster proxy readiness probe. Misconfigured probe can lead to a failing cluster.
-            readinessProbe:
-              httpGet:
-                path: /proxy/ready
-                port: gdb-proxy-port
-              initialDelaySeconds: 300
-              timeoutSeconds: 5
-              periodSeconds: 30
-            # -- Configurations for the GraphDB cluster proxy liveness probe. Misconfigured probe can lead to a failing cluster.
-            livenessProbe:
-              httpGet:
-                path: /proxy/health
-                port: gdb-proxy-port
-              initialDelaySeconds: 300
-              timeoutSeconds: 5
-              periodSeconds: 30
-            podSpec:
-              podAntiAffinity: false
-            # 
-            jobSecurityContext:
-              runAsNonRoot: false
-              allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: true
-              seccompProfile:
-                type: RuntimeDefault
-              capabilities:
-                drop:
-                  - ALL
-          jobSecurityContext:
-            runAsNonRoot: false
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
-            seccompProfile:
-              type: RuntimeDefault
-            capabilities:
-              drop:
-                - ALL
   destination:
     server: https://kubernetes.default.svc
     namespace: graphdb-platform
+  sources:
+    - chart: graphdb
+      repoURL: 'http://maven.ontotext.com/repository/helm-public/'
+      targetRevision: 10.5.1
+      helm:
+        version: v3
+        releaseName: graphdb-platform-helm-app
+        passCredentials: false
+        valueFiles:
+        - $values/projects/projects-base-apps/graphdb/selfservice/dev-tec/values-dev-tec.yaml
+    - repoURL: 'https://github.com/kwami-sossoe/nosql-services-infra-apps.git'
+      targetRevision: HEAD
+      ref: values
   syncPolicy:
     automated:
       prune: true
