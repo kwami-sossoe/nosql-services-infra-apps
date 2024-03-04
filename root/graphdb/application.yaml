@@ -15,7 +15,7 @@ spec:
     targetRevision: 10.6.1
     helm:
       valueFiles:
-      - $values/projects/projects-base-apps/graphdb/selfservice/dev-tec/values-dev-tec.yaml
+      - $values/root/graphdb/values-dev-tec.yaml
   - repoURL: 'https://github.com/kwami-sossoe/nosql-services-infra-apps.git'
     targetRevision: HEAD
     ref: values

@@ -1,7 +1,0 @@
----
-namespace: staging
-images:
-  - name: aputra/nginx
-    newTag: v0.1.0
-resources:
-  - ../../../../my-app-base

@@ -2,7 +2,6 @@ global:
   imagePullSecrets: []
   storageClass: "hostpath"
   imageRegistry: docker.io
-
 images:
   graphdb:
     # registry : le registre utilisé est un régistre local à l'environnement DEV-TEC
@@ -10,17 +9,7 @@ images:
     registry: docker.io
     repository: ontotext/graphdb
     # If specified, overrides Chart.AppVersion
-    tag: "10.5.1"
-
-createGraphdbCluster:
-  securityContext:
-    runAsNonRoot: true
-    seccompProfile:
-      type: "RuntimeDefault" 
-    capabilities:
-      drop:
-       - ALL
-
+    tag: "10.6.1"
 deployment:
   host: localhost
   protocol: https
@@ -28,14 +17,12 @@ deployment:
   # Ingress is enabled as variable added in the helm install command during the bootsraping or during updates 
   ingress:
     enabled: false
-
 graphdb:
   clusterConfig:
     nodesCount: 3
     clusterCreationTimeout: 1200
   #workbench:
   #  subpath: /
-
   node:
     # Cluster requires license, you have to provision it before deploying this chart
     license: graphdb-license
@@ -92,7 +79,6 @@ graphdb:
       periodSeconds: 30
     podSpec:
       podAntiAffinity: false
-
   clusterProxy:
     securityContext:
       runAsNonRoot: false
@@ -149,7 +135,6 @@ graphdb:
       capabilities:
         drop:
           - ALL
-
   jobSecurityContext:
     runAsNonRoot: false
     allowPrivilegeEscalation: false
@@ -159,3 +144,11 @@ graphdb:
     capabilities:
       drop:
         - ALL
+createGraphdbCluster:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: "RuntimeDefault" 
+    capabilities:
+      drop:
+       - ALL
