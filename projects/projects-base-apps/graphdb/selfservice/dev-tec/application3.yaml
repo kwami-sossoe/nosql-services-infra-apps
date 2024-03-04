@@ -12,7 +12,7 @@ spec:
   sources:
   - repoURL: 'http://maven.ontotext.com/repository/helm-public/'
     chart: graphdb  
-    targetRevision: 10.5.1
+    targetRevision: 10.6.1
     helm:
       version: v3
       releaseName: graphdb-platform-helm-app3
