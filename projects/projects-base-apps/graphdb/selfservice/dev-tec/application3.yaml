@@ -2,20 +2,20 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: graphdb-platform-argocd-app2
+  name: graphdb-platform-argocd-app3
   namespace: argocd
 spec:
   project: default
   destination:
     server: https://kubernetes.default.svc
-    namespace: graphdb-platform2
+    namespace: graphdb-platform3
   sources:
   - repoURL: 'http://maven.ontotext.com/repository/helm-public/'
     chart: graphdb  
     targetRevision: 10.5.1
     helm:
       version: v3
-      releaseName: graphdb-platform-helm-app2
+      releaseName: graphdb-platform-helm-app3
       passCredentials: false
       valueFiles:
       - $values/projects/projects-base-apps/graphdb/selfservice/dev-tec/values-dev-tec.yaml
