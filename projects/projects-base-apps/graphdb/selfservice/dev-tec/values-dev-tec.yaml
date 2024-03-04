@@ -12,7 +12,17 @@ images:
     # If specified, overrides Chart.AppVersion
     tag: "10.5.1"
 
+createGraphdbCluster:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: "RuntimeDefault" 
+    capabilities:
+      drop:
+       - ALL
+
 deployment:
+  host: localhost
   protocol: https
   # -- Ingress related configurations
   # Ingress is enabled as variable added in the helm install command during the bootsraping or during updates 
