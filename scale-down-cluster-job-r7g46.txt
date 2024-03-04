@@ -1,0 +1,73 @@
+Name:             scale-down-cluster-job-r7g46
+Namespace:        graphdb-platform
+Priority:         0
+Service Account:  default
+Node:             skwai-labs-fr01/192.168.75.108
+Start Time:       Mon, 04 Mar 2024 08:52:16 +0100
+Labels:           batch.kubernetes.io/controller-uid=b862787d-4ede-4032-a70b-6cccd370c07d
+                  batch.kubernetes.io/job-name=scale-down-cluster-job
+                  controller-uid=b862787d-4ede-4032-a70b-6cccd370c07d
+                  job-name=scale-down-cluster-job
+Annotations:      cni.projectcalico.org/containerID: 8372dba3e92cf1b6269315ff3d3759f00eb35afbf52876635ccdf88cb4c3b701
+                  cni.projectcalico.org/podIP: 
+                  cni.projectcalico.org/podIPs: 
+Status:           Failed
+IP:               10.1.95.38
+IPs:
+  IP:           10.1.95.38
+Controlled By:  Job/scale-down-cluster-job
+Containers:
+  scale-down-cluster:
+    Container ID:    containerd://27dc03ca3739e2440bdfbd280ef1e19727b6afbf9e0c9a0dd2f9750a1d637e26
+    Image:           docker.io/ontotext/graphdb:10.6.1
+    Image ID:        docker.io/ontotext/graphdb@sha256:4d46738fb1e2c1aff80e8f9cc4cf4028bded16062a2f1d3c3e0c1c8ecf8cc31b
+    Port:            <none>
+    Host Port:       <none>
+    SeccompProfile:  RuntimeDefault
+    Command:
+      bash
+    Args:
+      /tmp/utils/update-cluster.sh
+      removeNodes
+      3
+      graphdb-platform
+    State:          Terminated
+      Reason:       Error
+      Exit Code:    1
+      Started:      Mon, 04 Mar 2024 08:52:33 +0100
+      Finished:     Mon, 04 Mar 2024 09:00:56 +0100
+    Ready:          False
+    Restart Count:  0
+    Environment Variables from:
+      graphdb-provision-user  Secret  Optional: false
+    Environment:              <none>
+    Mounts:
+      /tmp from job-temp (rw)
+      /tmp/utils from graphdb-utils (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-2gnjs (ro)
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             False 
+  ContainersReady   False 
+  PodScheduled      True 
+Volumes:
+  job-temp:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     
+    SizeLimit:  10Mi
+  graphdb-utils:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      graphdb-utils-configmap
+    Optional:  false
+  kube-api-access-2gnjs:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:                      <none>

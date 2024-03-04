@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: graphdb
+  labels:
+    app: graphdb
+    app.kubernetes.io/name: graphdb
+    app.kubernetes.io/component: backend
+spec:
+  serviceName: "graphdb"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: graphdb
+      app.kubernetes.io/name: graphdb
+      app.kubernetes.io/component: backend
+  template:
+    metadata:
+      labels:
+        app: graphdb
+        app.kubernetes.io/name: graphdb
+        app.kubernetes.io/component: backend
+    spec:
+      containers:
+      - name: graphdb
+        image: ontotext/graphdb:10.6.1
+        args:
+         - --bind_ip
+         - 0.0.0.0
+        resources:
+          request:
+            cpu: 1000m
+            memory: 1000Mi
+        ports:
+        - containerPort: 7200
+          name: graphdb-workbench
+        volumeMounts:
+        - name: graphdb-workbench
+          mountPath: /
+  volumeClaimTemplates:
+  - metadata:
+      name: graphdb-workbench
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
