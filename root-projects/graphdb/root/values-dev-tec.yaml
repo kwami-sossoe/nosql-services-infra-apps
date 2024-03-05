@@ -1,6 +1,6 @@
 global:
   imagePullSecrets: []
-  storageClass: "standard"
+  storageClass: "localpath"
   imageRegistry: docker.io
 images:
   graphdb:

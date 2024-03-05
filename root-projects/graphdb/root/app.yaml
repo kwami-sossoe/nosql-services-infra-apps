@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: graphdb-platform-argocd-app
+  name: graphdb-platform-argocd-app2
   namespace: argocd
 spec:
   project: default
@@ -15,10 +15,199 @@ spec:
     chart: graphdb
     helm:
       parameters:
-        - name: my.helm.key
-          value: some-val
-      valueFiles:
-        - $values/root-projects/graphdb/root/values-dev-tec.yaml
+        - name: deployment.host
+          value: localhost
+        - name: deployment.protocol
+          value: https
+        - name: deployment.ingress.enabled
+          value: "false"
+          forceString: true
+
+        - name: graphdb.clusterConfig.nodesCount
+          value: "3"
+          forceString: true
+        - name: graphdb.clusterConfig.clusterCreationTimeout
+          value: "1200"
+          forceString: true
+        - name: graphdb.node.license
+          value: graphdb-license
+        
+        - name: graphdb.node.securityContext.runAsNonRoot
+          value: "false"
+          forceString: true
+        - name: graphdb.node.securityContext.allowPrivilegeEscalation
+          value: "false"
+          forceString: true
+        - name: graphdb.node.securityContext.readOnlyRootFilesystem
+          value: "true"
+          forceString: true
+        - name: graphdb.node.securityContext.seccompProfile.type
+          value: "RuntimeDefault"
+        - name: graphdb.node.securityContext.capabilities.drop
+          value: "['ALL']"
+        
+        - name: graphdb.node.initContainerSecurityContext.runAsNonRoot
+          value: "false"
+          forceString: true
+        - name: graphdb.node.initContainerSecurityContext.allowPrivilegeEscalation
+          value: "false"
+          forceString: true
+        - name: graphdb.node.initContainerSecurityContext.readOnlyRootFilesystem
+          value: "false"
+          forceString: true
+        - name: graphdb.node.initContainerSecurityContext.seccompProfile.type
+          value: "RuntimeDefault"
+        - name: graphdb.node.initContainerSecurityContext.capabilities.drop
+          value: "['ALL']"
+
+        - name: graphdb.node.startupProbe.httpGet.path
+          value: /protocol
+        - name: graphdb.node.startupProbe.httpGet.port
+          value: graphdb
+        - name: graphdb.node.startupProbe.failureThreshold
+          value: "600"
+          forceString: true
+        - name: graphdb.node.startupProbe.initialDelaySeconds
+          value: "300"
+          forceString: true
+        - name: graphdb.node.startupProbe.timeoutSeconds
+          value: "5"
+          forceString: true
+        - name: graphdb.node.startupProbe.periodSeconds
+          value: "30"
+          forceString: true
+
+        - name: graphdb.node.readinessProbe.httpGet.path
+          value: /protocol
+        - name: graphdb.node.readinessProbe.httpGet.port
+          value: graphdb
+        - name: graphdb.node.readinessProbe.initialDelaySeconds
+          value: "300"
+          forceString: true
+        - name: graphdb.node.readinessProbe.timeoutSeconds
+          value: "5"
+          forceString: true
+        - name: graphdb.node.readinessProbe.periodSeconds
+          value: "30"
+          forceString: true
+
+        - name: graphdb.node.livenessProbe.httpGet.path
+          value: /protocol
+        - name: graphdb.node.livenessProbe.httpGet.port
+          value: graphdb
+        - name: graphdb.node.livenessProbe.initialDelaySeconds
+          value: "300"
+          forceString: true
+        - name: graphdb.node.livenessProbe.timeoutSeconds
+          value: "5"
+          forceString: true
+        - name: graphdb.node.livenessProbe.periodSeconds
+          value: "30"
+          forceString: true
+        
+        - name: graphdb.node.podSpec.podAntiAffinity
+          value: "false"
+          forceString: true
+
+        - name: graphdb.clusterProxy.SecurityContext.runAsNonRoot
+          value: "false"
+          forceString: true
+        - name: graphdb.clusterProxy.SecurityContext.allowPrivilegeEscalation
+          value: "false"
+          forceString: true
+        - name: graphdb.clusterProxy.SecurityContext.readOnlyRootFilesystem
+          value: "true"
+          forceString: true
+        - name: graphdb.clusterProxy.SecurityContext.seccompProfile.type
+          value: "RuntimeDefault"
+        - name: graphdb.clusterProxy.SecurityContext.capabilities.drop
+          value: "['ALL']"
+        
+        - name: graphdb.clusterProxy.serviceType
+          value: ClusterIP
+
+        - name: graphdb.clusterProxy.startupProbe.httpGet.path
+          value: /proxy/ready
+        - name: graphdb.clusterProxy.startupProbe.httpGet.port
+          value: gdb-proxy-port
+        - name: graphdb.clusterProxy.startupProbe.failureThreshold
+          value: "600"
+          forceString: true
+        - name: graphdb.clusterProxy.startupProbe.initialDelaySeconds
+          value: "300"
+          forceString: true
+        - name: graphdb.clusterProxy.startupProbe.timeoutSeconds
+          value: "5"
+          forceString: true
+        - name: graphdb.clusterProxy.startupProbe.periodSeconds
+          value: "30"
+          forceString: true
+
+        - name: graphdb.clusterProxy.readinessProbe.httpGet.path
+          value: /proxy/ready
+        - name: graphdb.clusterProxy.readinessProbe.httpGet.port
+          value: gdb-proxy-port
+          forceString: true
+        - name: graphdb.clusterProxy.readinessProbe.initialDelaySeconds
+          value: "300"
+          forceString: true
+        - name: graphdb.clusterProxy.readinessProbe.timeoutSeconds
+          value: "5"
+          forceString: true
+        - name: graphdb.clusterProxy.readinessProbe.periodSeconds
+          value: "30"
+          forceString: true
+
+        - name: graphdb.clusterProxy.livenessProbe.httpGet.path
+          value: /proxy/health
+        - name: graphdb.clusterProxy.livenessProbe.httpGet.port
+          value: gdb-proxy-port
+          forceString: true
+        - name: graphdb.clusterProxy.livenessProbe.initialDelaySeconds
+          value: "300"
+          forceString: true
+        - name: graphdb.clusterProxy.livenessProbe.timeoutSeconds
+          value: "5"
+          forceString: true
+        - name: graphdb.clusterProxy.livenessProbe.periodSeconds
+          value: "30"
+          forceString: true
+
+        - name: graphdb.clusterProxy.jobSecurityContext.runAsNonRoot
+          value: "false"
+          forceString: true
+        - name: graphdb.clusterProxy.jobSecurityContext.allowPrivilegeEscalation
+          value: "false"
+          forceString: true
+        - name: graphdb.clusterProxy.jobSecurityContext.readOnlyRootFilesystem
+          value: "true"
+          forceString: true
+        - name: graphdb.clusterProxy.jobSecurityContext.seccompProfile.type
+          value: "RuntimeDefault"
+        - name: graphdb.clusterProxy.jobSecurityContext.capabilities.drop
+          value: "['ALL']"     
+
+        - name: graphdb.jobSecurityContext.runAsNonRoot
+          value: "false"
+          forceString: true
+        - name: graphdb.jobSecurityContext.allowPrivilegeEscalation
+          value: "false"
+          forceString: true
+        - name: graphdb.jobSecurityContext.readOnlyRootFilesystem
+          value: "true"
+          forceString: true
+        - name: graphdb.jobSecurityContext.seccompProfile.type
+          value: "RuntimeDefault"
+        - name: graphdb.jobSecurityContext.capabilities.drop
+          value: "['ALL']"   
+          
+        - name: createGraphdbCluster.securityContext.runAsNonRoot
+          value: "false"
+          forceString: true
+        - name: createGraphdbCluster.securityContext.seccompProfile.type
+          value: "RuntimeDefault"
+        - name: createGraphdbCluster.securityContext.capabilities.drop
+          value: "['ALL']"
   syncPolicy:
     automated:
       prune: true
