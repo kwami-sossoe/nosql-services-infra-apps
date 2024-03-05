@@ -23,7 +23,7 @@ spec:
         - name: deployment.protocol
           value: https
         - name: deployment.ingress.enabled
-          value: '0'
+          value: "false"
         
         - name: graphdb.clusterConfig.nodesCount
           value: "3"
@@ -35,22 +35,22 @@ spec:
           value: graphdb-license
         
         - name: graphdb.node.securityContext.runAsNonRoot
-          value: '0'
+          value: "false"
         - name: graphdb.node.securityContext.allowPrivilegeEscalation
-          value: '0'
+          value: "false"
         - name: graphdb.node.securityContext.readOnlyRootFilesystem
-          value: '1'
+          value: "true"
         - name: graphdb.node.securityContext.seccompProfile.type
           value: "RuntimeDefault"
         - name: graphdb.node.securityContext.capabilities.drop
           value: "['ALL']"
         
         - name: graphdb.node.initContainerSecurityContext.runAsNonRoot
-          value: '0'
+          value: "false"
         - name: graphdb.node.initContainerSecurityContext.allowPrivilegeEscalation
-          value: '0'
+          value: "false"
         - name: graphdb.node.initContainerSecurityContext.readOnlyRootFilesystem
-          value: '0'
+          value: "false"
         - name: graphdb.node.initContainerSecurityContext.seccompProfile.type
           value: "RuntimeDefault"
         - name: graphdb.node.initContainerSecurityContext.capabilities.drop
@@ -102,14 +102,14 @@ spec:
           forceString: true
         
         - name: graphdb.node.podSpec.podAntiAffinity
-          value: '0'
+          value: "false"
         
         - name: graphdb.clusterProxy.SecurityContext.runAsNonRoot
-          value: '0'
+          value: "false"
         - name: graphdb.clusterProxy.SecurityContext.allowPrivilegeEscalation
-          value: '0'
+          value: "false"
         - name: graphdb.clusterProxy.SecurityContext.readOnlyRootFilesystem
-          value: '1'
+          value: "true"
         - name: graphdb.clusterProxy.SecurityContext.seccompProfile.type
           value: "RuntimeDefault"
         - name: graphdb.clusterProxy.SecurityContext.capabilities.drop
@@ -166,32 +166,32 @@ spec:
           forceString: true
         
         - name: graphdb.clusterProxy.jobSecurityContext.runAsNonRoot
-          value: '0'
+          value: "false"
         - name: graphdb.clusterProxy.jobSecurityContext.allowPrivilegeEscalation
-          value: '0'
+          value: "false"
         - name: graphdb.clusterProxy.jobSecurityContext.readOnlyRootFilesystem
-          value: '1'
+          value: "true"
         - name: graphdb.clusterProxy.jobSecurityContext.seccompProfile.type
           value: "RuntimeDefault"
         - name: graphdb.clusterProxy.jobSecurityContext.capabilities.drop
           value: "['ALL']"
         
         - name: graphdb.clusterProxy.podSpec.podAntiAffinity
-          value: '0'
+          value: "false"
         
         - name: graphdb.jobSecurityContext.runAsNonRoot
-          value: '0'
+          value: "false"
         - name: graphdb.jobSecurityContext.allowPrivilegeEscalation
-          value: '0'
+          value: "false"
         - name: graphdb.jobSecurityContext.readOnlyRootFilesystem
-          value: '1'
+          value: "true"
         - name: graphdb.jobSecurityContext.seccompProfile.type
           value: "RuntimeDefault"
         - name: graphdb.jobSecurityContext.capabilities.drop
           value: "['ALL']"
         
         - name: createGraphdbCluster.securityContext.runAsNonRoot
-          value: '0'
+          value: "false"
         - name: createGraphdbCluster.securityContext.seccompProfile.type
           value: "RuntimeDefault"
         - name: createGraphdbCluster.securityContext.capabilities.drop

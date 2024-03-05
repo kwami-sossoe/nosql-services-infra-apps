@@ -25,7 +25,7 @@ echo "secret created"
 kubectl get secret -n ${Namespace}
 
 echo "Installation with Helm package"
-microk8s.helm install \
+helm install \
 	--set deployment.host=${graphdbClusterHost} \
 	--set createGraphdbCluster.securityContext.capabilities.drop=["ALL"] \
 	--set createGraphdbCluster.securityContext.runAsNonRoot=true \
