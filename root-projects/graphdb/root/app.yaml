@@ -11,7 +11,7 @@ spec:
     namespace: graphdb-platform2
   source:
     repoURL: 'http://maven.ontotext.com/repository/helm-public/'
-    targetRevision: 10.6.1
+    targetRevision: 10.5.1
     chart: graphdb
     helm:
       parameters:
@@ -20,9 +20,8 @@ spec:
         - name: deployment.protocol
           value: https
         - name: deployment.ingress.enabled
-          value: "false"
-          forceString: true
-
+          value: '0'
+        
         - name: graphdb.clusterConfig.nodesCount
           value: "3"
           forceString: true
@@ -33,33 +32,27 @@ spec:
           value: graphdb-license
         
         - name: graphdb.node.securityContext.runAsNonRoot
-          value: "false"
-          forceString: true
+          value: '0'
         - name: graphdb.node.securityContext.allowPrivilegeEscalation
-          value: "false"
-          forceString: true
+          value: '0'
         - name: graphdb.node.securityContext.readOnlyRootFilesystem
-          value: "true"
-          forceString: true
+          value: '1'
         - name: graphdb.node.securityContext.seccompProfile.type
           value: "RuntimeDefault"
         - name: graphdb.node.securityContext.capabilities.drop
           value: "['ALL']"
         
         - name: graphdb.node.initContainerSecurityContext.runAsNonRoot
-          value: "false"
-          forceString: true
+          value: '0'
         - name: graphdb.node.initContainerSecurityContext.allowPrivilegeEscalation
-          value: "false"
-          forceString: true
+          value: '0'
         - name: graphdb.node.initContainerSecurityContext.readOnlyRootFilesystem
-          value: "false"
-          forceString: true
+          value: '0'
         - name: graphdb.node.initContainerSecurityContext.seccompProfile.type
           value: "RuntimeDefault"
         - name: graphdb.node.initContainerSecurityContext.capabilities.drop
           value: "['ALL']"
-
+        
         - name: graphdb.node.startupProbe.httpGet.path
           value: /protocol
         - name: graphdb.node.startupProbe.httpGet.port
@@ -76,7 +69,7 @@ spec:
         - name: graphdb.node.startupProbe.periodSeconds
           value: "30"
           forceString: true
-
+        
         - name: graphdb.node.readinessProbe.httpGet.path
           value: /protocol
         - name: graphdb.node.readinessProbe.httpGet.port
@@ -90,7 +83,7 @@ spec:
         - name: graphdb.node.readinessProbe.periodSeconds
           value: "30"
           forceString: true
-
+        
         - name: graphdb.node.livenessProbe.httpGet.path
           value: /protocol
         - name: graphdb.node.livenessProbe.httpGet.port
@@ -106,18 +99,14 @@ spec:
           forceString: true
         
         - name: graphdb.node.podSpec.podAntiAffinity
-          value: "false"
-          forceString: true
-
+          value: '0'
+        
         - name: graphdb.clusterProxy.SecurityContext.runAsNonRoot
-          value: "false"
-          forceString: true
+          value: '0'
         - name: graphdb.clusterProxy.SecurityContext.allowPrivilegeEscalation
-          value: "false"
-          forceString: true
+          value: '0'
         - name: graphdb.clusterProxy.SecurityContext.readOnlyRootFilesystem
-          value: "true"
-          forceString: true
+          value: '1'
         - name: graphdb.clusterProxy.SecurityContext.seccompProfile.type
           value: "RuntimeDefault"
         - name: graphdb.clusterProxy.SecurityContext.capabilities.drop
@@ -125,7 +114,7 @@ spec:
         
         - name: graphdb.clusterProxy.serviceType
           value: ClusterIP
-
+        
         - name: graphdb.clusterProxy.startupProbe.httpGet.path
           value: /proxy/ready
         - name: graphdb.clusterProxy.startupProbe.httpGet.port
@@ -172,38 +161,34 @@ spec:
         - name: graphdb.clusterProxy.livenessProbe.periodSeconds
           value: "30"
           forceString: true
-
+        
         - name: graphdb.clusterProxy.jobSecurityContext.runAsNonRoot
-          value: "false"
-          forceString: true
+          value: '0'
         - name: graphdb.clusterProxy.jobSecurityContext.allowPrivilegeEscalation
-          value: "false"
-          forceString: true
+          value: '0'
         - name: graphdb.clusterProxy.jobSecurityContext.readOnlyRootFilesystem
-          value: "true"
-          forceString: true
+          value: '1'
         - name: graphdb.clusterProxy.jobSecurityContext.seccompProfile.type
           value: "RuntimeDefault"
         - name: graphdb.clusterProxy.jobSecurityContext.capabilities.drop
-          value: "['ALL']"     
-
+          value: "['ALL']"
+        
+        - name: graphdb.clusterProxy.podSpec.podAntiAffinity
+          value: '0'
+        
         - name: graphdb.jobSecurityContext.runAsNonRoot
-          value: "false"
-          forceString: true
+          value: '0'
         - name: graphdb.jobSecurityContext.allowPrivilegeEscalation
-          value: "false"
-          forceString: true
+          value: '0'
         - name: graphdb.jobSecurityContext.readOnlyRootFilesystem
-          value: "true"
-          forceString: true
+          value: '1'
         - name: graphdb.jobSecurityContext.seccompProfile.type
           value: "RuntimeDefault"
         - name: graphdb.jobSecurityContext.capabilities.drop
-          value: "['ALL']"   
-          
+          value: "['ALL']"
+        
         - name: createGraphdbCluster.securityContext.runAsNonRoot
-          value: "false"
-          forceString: true
+          value: '0'
         - name: createGraphdbCluster.securityContext.seccompProfile.type
           value: "RuntimeDefault"
         - name: createGraphdbCluster.securityContext.capabilities.drop
