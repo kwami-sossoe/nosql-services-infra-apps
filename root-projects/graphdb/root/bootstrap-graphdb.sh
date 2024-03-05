@@ -20,6 +20,9 @@ kubectl create ns ${Namespace}
 
 echo "Graphdb cluster need graphdb-license : secret creating"
 kubectl create secret generic graphdb-license -n ${Namespace} --from-file graphdb.license
+
+kubectl create secret generic graphdb-license -n graphdb-platform-new --from-file graphdb.license
+
 echo "secret created" 
 
 kubectl get secret -n ${Namespace}

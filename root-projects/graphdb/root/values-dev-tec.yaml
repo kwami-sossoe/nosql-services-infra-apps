@@ -1,7 +1,5 @@
 global:
-  imagePullSecrets: []
   storageClass: "local-path"
-  imageRegistry: docker.io
 images:
   graphdb:
     # registry : le registre utilisé est un régistre local à l'environnement DEV-TEC
