@@ -1,0 +1,8 @@
+---
+server:
+  extraArgs:
+    - --insecure
+
+# helm install argocd -n argocd --create-namespace argo/argo-cd --version 5.55.0 -f argocd.yaml
+
+# k3d cluster create dev --servers 3 --agents 5 -p "80:80@loadbalancer" -p "443:443@loadbalancer"
