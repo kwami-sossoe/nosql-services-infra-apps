@@ -43,7 +43,7 @@ spec:
         - name: graphdb.node.securityContext.seccompProfile.type
           value: "RuntimeDefault"
         - name: graphdb.node.securityContext.capabilities.drop
-          value: "[ALL]"
+          value: ALL
         
         - name: graphdb.node.initContainerSecurityContext.runAsNonRoot
           value: "false"
@@ -54,7 +54,7 @@ spec:
         - name: graphdb.node.initContainerSecurityContext.seccompProfile.type
           value: "RuntimeDefault"
         - name: graphdb.node.initContainerSecurityContext.capabilities.drop
-          value: "[ALL]"
+          value: ALL
         
         - name: graphdb.node.startupProbe.httpGet.path
           value: /protocol
@@ -113,7 +113,7 @@ spec:
         - name: graphdb.clusterProxy.SecurityContext.seccompProfile.type
           value: "RuntimeDefault"
         - name: graphdb.clusterProxy.SecurityContext.capabilities.drop
-          value: "[ALL]"
+          value: ALL
         
         - name: graphdb.clusterProxy.serviceType
           value: ClusterIP
@@ -174,7 +174,7 @@ spec:
         - name: graphdb.clusterProxy.jobSecurityContext.seccompProfile.type
           value: "RuntimeDefault"
         - name: graphdb.clusterProxy.jobSecurityContext.capabilities.drop
-          value: "[ALL]"
+          value: ALL
         
         - name: graphdb.clusterProxy.podSpec.podAntiAffinity
           value: "false"
@@ -188,14 +188,14 @@ spec:
         - name: graphdb.jobSecurityContext.seccompProfile.type
           value: "RuntimeDefault"
         - name: graphdb.jobSecurityContext.capabilities.drop
-          value: "[ALL]"
+          value: ALL
         
         - name: createGraphdbCluster.securityContext.runAsNonRoot
           value: "false"
         - name: createGraphdbCluster.securityContext.seccompProfile.type
           value: "RuntimeDefault"
         - name: createGraphdbCluster.securityContext.capabilities.drop
-          value: "[ALL]"
+          value: ALL
   syncPolicy:
     automated:
       prune: true
