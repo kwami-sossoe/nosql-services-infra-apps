@@ -15,6 +15,9 @@ spec:
     chart: graphdb
     helm:
       parameters:
+        - name: global.storageClass
+          value: local-path
+        
         - name: deployment.host
           value: localhost
         - name: deployment.protocol
