@@ -8,17 +8,17 @@ spec:
   project: default
   destination:
     server: https://kubernetes.default.svc
-    namespace: graphdb-platform
-  sources:
-    - repoURL: 'http://maven.ontotext.com/repository/helm-public/'
-      chart: graphdb
-      targetRevision: 10.6.1
-      helm:
-        valueFiles:
+    namespace: graphdb-platform2
+  source:
+    repoURL: 'http://maven.ontotext.com/repository/helm-public/'
+    targetRevision: 10.6.1
+    chart: graphdb
+    helm:
+      parameters:
+        - name: my.helm.key
+          value: some-val
+      valueFiles:
         - $values/root-projects/graphdb/root/values-dev-tec.yaml
-    - repoURL: 'https://github.com/kwami-sossoe/nosql-services-infra-apps.git'
-      targetRevision: HEAD
-      ref: values
   syncPolicy:
     automated:
       prune: true
